@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "myo_light"
+display_name = "낫끝긋기"
+input_command = "L"
+startup_frames = 6
+active_frames = 3
+recovery_frames = 12
+damage = 60
+chip_damage = 6
+priority = 1
+hitstop = 5
+hitstop_edge = 7
+hitstun = 16
+blockstun = 11
+pushback_hit = 30
+pushback_block = 26
+cancel_windows = [{"targets": ["myo_medium"], "from": 8, "to": 15, "on": ["hit", "block"]}]
+hitboxes_by_frame = [[7, 9, 40, 96, 120, 24]]
+motion_frames = [[1, 6, 500], [7, 9, 1600], [10, 13, -300]]
+sound_event = "hit_l"

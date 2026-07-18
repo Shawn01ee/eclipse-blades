@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru_medium"
+display_name = "큰낫쓸기"
+input_command = "M"
+role_note = "긴 거리 가로 견제"
+startup_frames = 11
+active_frames = 4
+recovery_frames = 21
+damage = 140
+chip_damage = 14
+priority = 2
+hitstop = 8
+hitstop_edge = 11
+hitstun = 23
+blockstun = 15
+pushback_hit = 36
+pushback_block = 32
+hitboxes_by_frame = [[12, 15, 40, 95, 150, 32]]
+motion_frames = [[1, 11, 700], [12, 15, 2400], [16, 21, -350]]
+sound_event = "hit_m"

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_air"
+display_name = "공중파도베기"
+input_command = "공중 공격"
+startup_frames = 9
+active_frames = 6
+recovery_frames = 16
+damage = 165
+chip_damage = 16
+priority = 3
+hitstop = 12
+hitstop_edge = 16
+hitstun = 27
+blockstun = 18
+pushback_hit = 40
+pushback_block = 32
+hitboxes_by_frame = [[10, 15, 30, 18, 135, 85]]
+sound_event = "hit_h"
+camera_event = "shake_m"

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_motion_light"
+display_name = "잔파"
+input_command = "↓↘→+L"
+role_note = "빠른 파도 견제"
+startup_frames = 9
+active_frames = 4
+recovery_frames = 20
+damage = 125
+chip_damage = 12
+priority = 2
+hitstop = 9
+hitstop_edge = 12
+hitstun = 23
+blockstun = 15
+pushback_hit = 40
+pushback_block = 32
+hitboxes_by_frame = [[10, 13, 32, 88, 125, 38]]
+motion_frames = [[1, 7, 1200], [8, 13, 3200], [14, 20, -250]]
+sound_event = "hit_m"
+camera_event = "shake_s"

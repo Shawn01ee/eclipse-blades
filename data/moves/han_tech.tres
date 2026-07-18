@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "han_tech"
+display_name = "제비파고들기"
+input_command = "T"
+role_note = "초고속 파고들기"
+startup_frames = 6
+active_frames = 3
+recovery_frames = 17
+damage = 40
+chip_damage = 4
+priority = 2
+hitstop = 6
+hitstop_edge = 6
+hitstun = 17
+blockstun = 10
+pushback_hit = 26
+pushback_block = 20
+hitboxes_by_frame = [[7, 9, 26, 92, 86, 24]]
+motion_frames = [[1, 6, 14000]]
+edge_enabled = false
+sound_event = "hit_l"

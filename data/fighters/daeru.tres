@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://combat/fighter_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/moves/daeru_light.tres" id="2"]
+[ext_resource type="Resource" path="res://data/moves/daeru_medium.tres" id="3"]
+[ext_resource type="Resource" path="res://data/moves/daeru_heavy.tres" id="4"]
+[ext_resource type="Resource" path="res://data/moves/daeru_tech.tres" id="5"]
+[ext_resource type="Resource" path="res://data/moves/daeru_grab.tres" id="6"]
+[ext_resource type="Resource" path="res://data/moves/daeru_super.tres" id="7"]
+[ext_resource type="Resource" path="res://data/moves/daeru_air.tres" id="8"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru"
+display_name = "이와오"
+weapon_name = "장월도"
+style_note = "매우 긴 칼대, 긴 후딜의 브루저"
+color = Color(0.22, 0.21, 0.2, 1)
+max_hp = 1000
+walk_f = 3600
+walk_b = 2900
+pushbox_hw = 38
+hurtbox_hw = 46
+hurtbox_h = 185
+edge_ratio_pct = 20
+moves = {
+"light": ExtResource("2"),
+"medium": ExtResource("3"),
+"heavy": ExtResource("4"),
+"tech": ExtResource("5"),
+"grab": ExtResource("6"),
+"super": ExtResource("7"),
+"air": ExtResource("8")
+}

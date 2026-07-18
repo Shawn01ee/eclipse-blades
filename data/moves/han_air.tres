@@ -1,0 +1,23 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "han_air"
+display_name = "공중찌르기내리꽂기"
+input_command = "공중 공격"
+startup_frames = 5
+active_frames = 9
+recovery_frames = 9
+damage = 90
+chip_damage = 9
+priority = 2
+hitstop = 7
+hitstop_edge = 10
+hitstun = 19
+blockstun = 12
+pushback_hit = 24
+pushback_block = 20
+hitboxes_by_frame = [[6, 14, 22, 16, 82, 74]]
+sound_event = "hit_m"

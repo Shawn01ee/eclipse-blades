@@ -1,0 +1,24 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_light"
+display_name = "물결긋기"
+input_command = "L"
+startup_frames = 5
+active_frames = 3
+recovery_frames = 12
+damage = 95
+chip_damage = 9
+priority = 1
+hitstop = 7
+hitstop_edge = 10
+hitstun = 19
+blockstun = 12
+pushback_hit = 36
+pushback_block = 28
+hitboxes_by_frame = [[6, 8, 30, 94, 95, 26]]
+motion_frames = [[1, 5, 700], [6, 8, 2200], [9, 12, -300]]
+sound_event = "hit_l"

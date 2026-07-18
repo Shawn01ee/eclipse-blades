@@ -1,0 +1,37 @@
+{
+ "cell_w": 542,
+ "cell_h": 420,
+ "foot_y": 400,
+ "anims": {
+  "idle": {
+   "frames": 6,
+   "fps": 7,
+   "loop": true
+  },
+  "walk": {
+   "frames": 6,
+   "fps": 12,
+   "loop": true
+  },
+  "attack": {
+   "frames": 8,
+   "fps": 30,
+   "loop": false
+  },
+  "hit": {
+   "frames": 4,
+   "fps": 24,
+   "loop": false
+  },
+  "guard": {
+   "frames": 2,
+   "fps": 16,
+   "loop": true
+  },
+  "ko": {
+   "frames": 5,
+   "fps": 14,
+   "loop": false
+  }
+ }
+}

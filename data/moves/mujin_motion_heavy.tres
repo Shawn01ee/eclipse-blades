@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_motion_heavy"
+display_name = "해일파"
+input_command = "↓↘→+H"
+role_note = "긴 활성의 대형 베기"
+startup_frames = 18
+active_frames = 8
+recovery_frames = 38
+damage = 285
+chip_damage = 29
+priority = 3
+hitstop = 15
+hitstop_edge = 19
+hitstun = 37
+blockstun = 23
+pushback_hit = 64
+pushback_block = 50
+hitboxes_by_frame = [[19, 26, 38, 76, 190, 58]]
+motion_frames = [[1, 12, 700], [13, 26, 3900], [27, 39, -350]]
+sound_event = "hit_h"
+camera_event = "shake_m"

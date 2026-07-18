@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru_grab"
+display_name = "멱살들어올리기"
+input_command = "→+M (근접)"
+startup_frames = 9
+active_frames = 2
+recovery_frames = 24
+damage = 200
+chip_damage = 0
+priority = 1
+hitstun = 14
+blockstun = 0
+pushback_hit = 105
+pushback_block = 0
+hitboxes_by_frame = [[10, 11, 12, 60, 62, 60]]
+edge_enabled = false
+is_grab = true
+grab_range = 115
+unblockable = true
+sound_event = "grab"

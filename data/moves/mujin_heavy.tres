@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_heavy"
+display_name = "해벽가르기"
+input_command = "H"
+role_note = "최대 단발·강한 가드 압박"
+startup_frames = 19
+active_frames = 5
+recovery_frames = 35
+damage = 330
+chip_damage = 33
+priority = 3
+hitstop = 15
+hitstop_edge = 20
+hitstun = 39
+blockstun = 24
+pushback_hit = 62
+pushback_block = 50
+hitboxes_by_frame = [[20, 24, 40, 82, 170, 50]]
+motion_frames = [[1, 13, 400], [14, 24, 2300], [25, 34, -250]]
+sound_event = "hit_h"
+camera_event = "shake_m"

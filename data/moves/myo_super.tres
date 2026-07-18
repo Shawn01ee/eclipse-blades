@@ -1,0 +1,28 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "myo_super"
+display_name = "오의 사슬지옥"
+input_command = "오의 키 (사맥 3) / ↓↘→+H+T"
+role_note = "최장거리 봉쇄 오의"
+startup_frames = 25
+active_frames = 6
+recovery_frames = 42
+damage = 460
+edge_damage = 460
+chip_damage = 62
+priority = 4
+hitstop = 20
+hitstop_edge = 20
+hitstun = 40
+blockstun = 24
+pushback_hit = 70
+pushback_block = 55
+meter_cost = 3
+hitboxes_by_frame = [[26, 31, 40, 80, 260, 60]]
+edge_enabled = false
+sound_event = "super"
+camera_event = "shake_h"

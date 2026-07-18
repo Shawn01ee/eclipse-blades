@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "myo_medium"
+display_name = "사슬휘돌리기"
+input_command = "M"
+role_note = "넓은 사슬 공간 장악"
+startup_frames = 12
+active_frames = 5
+recovery_frames = 20
+damage = 120
+chip_damage = 12
+priority = 2
+hitstop = 8
+hitstop_edge = 11
+hitstun = 22
+blockstun = 15
+pushback_hit = 34
+pushback_block = 30
+cancel_windows = [{"targets": ["myo_tech"], "from": 14, "to": 22, "on": ["hit"]}]
+hitboxes_by_frame = [[13, 17, 60, 92, 170, 28]]
+motion_frames = [[1, 12, 400], [13, 17, 2100], [18, 24, -300]]
+sound_event = "hit_m"

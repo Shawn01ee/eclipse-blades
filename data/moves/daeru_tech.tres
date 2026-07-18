@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru_tech"
+display_name = "장월꿰기"
+input_command = "T"
+role_note = "근접 사각 끝거리 찌르기"
+startup_frames = 9
+active_frames = 3
+recovery_frames = 22
+damage = 45
+chip_damage = 4
+priority = 2
+hitstop = 6
+hitstop_edge = 6
+hitstun = 18
+blockstun = 12
+pushback_hit = 36
+pushback_block = 20
+hitboxes_by_frame = [[10, 12, 120, 100, 130, 20]]
+motion_frames = [[1, 9, 3800], [10, 12, 5200], [13, 19, -700]]
+edge_enabled = false
+sound_event = "hit_l"

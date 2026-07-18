@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Godot generated cache
+.godot/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local logs and captures
+*.log
+captures/
+screenshots/
+progress.md
+MOBILE.md
+data/asset_ledger.md
+art/_shot_*
+art/_fx_heavy_*
+art/portraits/*(*).png*
+art/portraits/여기에_초상화.md
+art/combat_atlas/README.md
+art/combat_atlas/*_chroma.png
+art/combat_atlas/*_chroma.png.import
+
+# Keep the committed web release used by GitHub Pages.
+!build/
+!build/web/
+!build/web/**
+build/web/*.import

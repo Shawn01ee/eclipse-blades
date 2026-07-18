@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "arin_grab"
+display_name = "옷깃잡아채기"
+input_command = "→+M (근접)"
+startup_frames = 8
+active_frames = 2
+recovery_frames = 22
+damage = 180
+chip_damage = 0
+priority = 1
+hitstun = 14
+blockstun = 0
+pushback_hit = 95
+pushback_block = 0
+hitboxes_by_frame = [[9, 10, 10, 60, 58, 60]]
+edge_enabled = false
+is_grab = true
+grab_range = 110
+unblockable = true
+sound_event = "grab"

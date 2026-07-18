@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "han_grab"
+display_name = "목물어뜯기"
+input_command = "→+M (근접)"
+startup_frames = 7
+active_frames = 2
+recovery_frames = 21
+damage = 165
+chip_damage = 0
+priority = 1
+hitstun = 14
+blockstun = 0
+pushback_hit = 85
+pushback_block = 0
+hitboxes_by_frame = [[8, 9, 8, 58, 56, 58]]
+edge_enabled = false
+is_grab = true
+grab_range = 100
+unblockable = true
+sound_event = "grab"

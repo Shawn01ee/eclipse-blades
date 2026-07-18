@@ -1,0 +1,29 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_super"
+display_name = "오의 천해일도"
+input_command = "오의 키 (사맥 3) / ↓↘→+H+T"
+role_note = "전신을 싣는 최고 피해"
+startup_frames = 28
+active_frames = 7
+recovery_frames = 48
+damage = 500
+edge_damage = 500
+chip_damage = 70
+priority = 4
+hitstop = 22
+hitstop_edge = 22
+hitstun = 44
+blockstun = 27
+pushback_hit = 105
+pushback_block = 70
+meter_cost = 3
+hitboxes_by_frame = [[29, 35, 32, 70, 190, 70]]
+motion_frames = [[12, 24, 700], [25, 35, 6500]]
+edge_enabled = false
+sound_event = "super"
+camera_event = "shake_h"

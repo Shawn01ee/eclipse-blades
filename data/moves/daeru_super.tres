@@ -1,0 +1,28 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru_super"
+display_name = "오의 흑월참"
+input_command = "오의 키 (사맥 3) / ↓↘→+H+T"
+role_note = "화면 절반 장거리 오의"
+startup_frames = 26
+active_frames = 5
+recovery_frames = 44
+damage = 480
+edge_damage = 480
+chip_damage = 70
+priority = 4
+hitstop = 20
+hitstop_edge = 20
+hitstun = 42
+blockstun = 26
+pushback_hit = 100
+pushback_block = 70
+meter_cost = 3
+hitboxes_by_frame = [[27, 31, 40, 75, 200, 60]]
+edge_enabled = false
+sound_event = "super"
+camera_event = "shake_h"

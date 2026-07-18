@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_tech"
+display_name = "역류참"
+input_command = "T"
+role_note = "머리 위를 덮는 대공"
+startup_frames = 7
+active_frames = 6
+recovery_frames = 25
+damage = 190
+chip_damage = 19
+priority = 3
+hitstop = 11
+hitstop_edge = 15
+hitstun = 29
+blockstun = 18
+pushback_hit = 48
+pushback_block = 38
+hitboxes_by_frame = [[8, 13, 32, 82, 118, 100]]
+motion_frames = [[1, 7, 1000], [8, 13, 1200]]
+sound_event = "hit_h"
+camera_event = "shake_m"

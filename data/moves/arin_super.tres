@@ -1,0 +1,29 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "arin_super"
+display_name = "오의 월식일섬"
+input_command = "오의 키 (사맥 3) / ↓↘→+H+T"
+role_note = "고속 관통 오의"
+startup_frames = 24
+active_frames = 4
+recovery_frames = 40
+damage = 450
+edge_damage = 450
+chip_damage = 60
+priority = 4
+hitstop = 20
+hitstop_edge = 20
+hitstun = 40
+blockstun = 24
+pushback_hit = 90
+pushback_block = 60
+meter_cost = 3
+hitboxes_by_frame = [[25, 28, 30, 80, 150, 50]]
+motion_frames = [[10, 20, 8000]]
+edge_enabled = false
+sound_event = "super"
+camera_event = "shake_h"

@@ -1,0 +1,29 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "han_super"
+display_name = "오의 백선난무"
+input_command = "오의 키 (사맥 3) / ↓↘→+H+T"
+role_note = "연속 돌진 오의"
+startup_frames = 20
+active_frames = 6
+recovery_frames = 38
+damage = 400
+edge_damage = 400
+chip_damage = 55
+priority = 4
+hitstop = 18
+hitstop_edge = 18
+hitstun = 38
+blockstun = 22
+pushback_hit = 80
+pushback_block = 55
+meter_cost = 3
+motion_frames = [[8, 24, 9000]]
+hitboxes_by_frame = [[21, 26, 26, 82, 110, 40]]
+edge_enabled = false
+sound_event = "super"
+camera_event = "shake_h"

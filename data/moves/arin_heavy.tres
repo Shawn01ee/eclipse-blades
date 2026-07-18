@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "arin_heavy"
+display_name = "낙월단칼"
+input_command = "H"
+role_note = "빈틈 처벌 결정타"
+startup_frames = 17
+active_frames = 5
+recovery_frames = 31
+damage = 235
+chip_damage = 26
+priority = 3
+hitstop = 13
+hitstop_edge = 17
+hitstun = 32
+blockstun = 20
+pushback_hit = 48
+pushback_block = 40
+hitboxes_by_frame = [[18, 22, 36, 85, 132, 40]]
+motion_frames = [[1, 12, 1000], [13, 22, 2200], [23, 32, -400]]
+sound_event = "hit_h"
+camera_event = "shake_m"

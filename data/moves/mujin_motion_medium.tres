@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin_motion_medium"
+display_name = "겹파"
+input_command = "↓↘→+M"
+role_note = "중거리 연속 압박"
+startup_frames = 13
+active_frames = 6
+recovery_frames = 28
+damage = 205
+chip_damage = 21
+priority = 3
+hitstop = 12
+hitstop_edge = 16
+hitstun = 31
+blockstun = 19
+pushback_hit = 52
+pushback_block = 42
+hitboxes_by_frame = [[14, 19, 34, 82, 160, 48]]
+motion_frames = [[1, 10, 800], [11, 19, 3600], [20, 29, -300]]
+sound_event = "hit_h"
+camera_event = "shake_m"

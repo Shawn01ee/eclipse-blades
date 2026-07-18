@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "han_light"
+display_name = "잽찌르기"
+input_command = "L"
+startup_frames = 4
+active_frames = 2
+recovery_frames = 9
+damage = 55
+chip_damage = 5
+priority = 1
+hitstop = 4
+hitstop_edge = 6
+hitstun = 15
+blockstun = 9
+pushback_hit = 24
+pushback_block = 20
+cancel_windows = [{"targets": ["han_light", "han_medium", "han_tech"], "from": 5, "to": 11, "on": ["hit", "block"]}]
+hitboxes_by_frame = [[5, 6, 24, 100, 66, 22]]
+motion_frames = [[1, 4, 1500], [5, 6, 3400], [7, 9, -700]]
+sound_event = "hit_l"

@@ -1,0 +1,42 @@
+[gd_resource type="Resource" load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://combat/fighter_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/moves/mujin_light.tres" id="2"]
+[ext_resource type="Resource" path="res://data/moves/mujin_medium.tres" id="3"]
+[ext_resource type="Resource" path="res://data/moves/mujin_heavy.tres" id="4"]
+[ext_resource type="Resource" path="res://data/moves/mujin_tech.tres" id="5"]
+[ext_resource type="Resource" path="res://data/moves/mujin_grab.tres" id="6"]
+[ext_resource type="Resource" path="res://data/moves/mujin_super.tres" id="7"]
+[ext_resource type="Resource" path="res://data/moves/mujin_air.tres" id="8"]
+[ext_resource type="Resource" path="res://data/moves/mujin_motion_light.tres" id="9"]
+[ext_resource type="Resource" path="res://data/moves/mujin_motion_medium.tres" id="10"]
+[ext_resource type="Resource" path="res://data/moves/mujin_motion_heavy.tres" id="11"]
+[ext_resource type="Resource" path="res://data/moves/mujin_motion_nerve.tres" id="12"]
+
+[resource]
+script = ExtResource("1")
+id = "mujin"
+display_name = "무진"
+weapon_name = "파도검"
+style_note = "한 번의 대베기에 전신의 무게를 싣는 방랑 검객"
+color = Color(0.50, 0.20, 0.15, 1)
+max_hp = 1200
+walk_f = 3800
+walk_b = 3100
+pushbox_hw = 40
+hurtbox_hw = 45
+hurtbox_h = 190
+edge_ratio_pct = 25
+moves = {
+"light": ExtResource("2"),
+"medium": ExtResource("3"),
+"heavy": ExtResource("4"),
+"tech": ExtResource("5"),
+"grab": ExtResource("6"),
+"super": ExtResource("7"),
+"air": ExtResource("8"),
+"motion_light": ExtResource("9"),
+"motion_medium": ExtResource("10"),
+"motion_heavy": ExtResource("11"),
+"motion_nerve": ExtResource("12")
+}

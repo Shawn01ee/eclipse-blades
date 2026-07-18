@@ -1,0 +1,24 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru_air"
+display_name = "공중월도내려치기"
+input_command = "공중 공격"
+startup_frames = 8
+active_frames = 8
+recovery_frames = 13
+damage = 145
+chip_damage = 14
+priority = 3
+hitstop = 11
+hitstop_edge = 15
+hitstun = 24
+blockstun = 17
+pushback_hit = 34
+pushback_block = 28
+hitboxes_by_frame = [[9, 16, 30, 14, 120, 96]]
+sound_event = "hit_h"
+camera_event = "shake_m"

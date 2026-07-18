@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru_light"
+display_name = "자루후리기"
+input_command = "L"
+startup_frames = 6
+active_frames = 3
+recovery_frames = 13
+damage = 75
+chip_damage = 7
+priority = 1
+hitstop = 5
+hitstop_edge = 7
+hitstun = 16
+blockstun = 11
+pushback_hit = 30
+pushback_block = 26
+cancel_windows = [{"targets": ["daeru_medium"], "from": 7, "to": 15, "on": ["hit", "block"]}]
+hitboxes_by_frame = [[7, 9, 34, 100, 110, 26]]
+motion_frames = [[1, 6, 800], [7, 9, 2200], [10, 13, -400]]
+sound_event = "hit_l"

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "daeru_heavy"
+display_name = "월도내려찍기"
+input_command = "H"
+role_note = "넓은 대공 내려찍기"
+startup_frames = 19
+active_frames = 6
+recovery_frames = 36
+damage = 290
+chip_damage = 29
+priority = 3
+hitstop = 13
+hitstop_edge = 17
+hitstun = 34
+blockstun = 21
+pushback_hit = 52
+pushback_block = 44
+hitboxes_by_frame = [[20, 25, 44, 165, 170, 125]]
+motion_frames = [[1, 14, 600], [15, 25, 2800], [26, 36, -300]]
+sound_event = "hit_h"
+camera_event = "shake_m"

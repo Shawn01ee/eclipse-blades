@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "han_medium"
+display_name = "엇갈려베기"
+input_command = "M"
+role_note = "강·기술로 잇는 연속 압박"
+startup_frames = 8
+active_frames = 3
+recovery_frames = 16
+damage = 95
+chip_damage = 9
+priority = 2
+hitstop = 7
+hitstop_edge = 10
+hitstun = 20
+blockstun = 13
+pushback_hit = 30
+pushback_block = 26
+cancel_windows = [{"targets": ["han_heavy", "han_tech"], "from": 9, "to": 16, "on": ["hit", "block"]}]
+hitboxes_by_frame = [[9, 11, 26, 92, 92, 30]]
+motion_frames = [[1, 8, 1700], [9, 11, 3900], [12, 16, -700]]
+sound_event = "hit_m"

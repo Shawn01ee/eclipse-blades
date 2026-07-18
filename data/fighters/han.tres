@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://combat/fighter_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/moves/han_light.tres" id="2"]
+[ext_resource type="Resource" path="res://data/moves/han_medium.tres" id="3"]
+[ext_resource type="Resource" path="res://data/moves/han_heavy.tres" id="4"]
+[ext_resource type="Resource" path="res://data/moves/han_tech.tres" id="5"]
+[ext_resource type="Resource" path="res://data/moves/han_grab.tres" id="6"]
+[ext_resource type="Resource" path="res://data/moves/han_super.tres" id="7"]
+[ext_resource type="Resource" path="res://data/moves/han_air.tres" id="8"]
+
+[resource]
+script = ExtResource("1")
+id = "han"
+display_name = "하야테"
+weapon_name = "쌍단도"
+style_note = "질풍의 러시다운, 짧은 사거리·빠른 압박"
+color = Color(0.72, 0.17, 0.14, 1)
+max_hp = 975
+walk_f = 4900
+walk_b = 4100
+pushbox_hw = 30
+hurtbox_hw = 38
+hurtbox_h = 168
+edge_ratio_pct = 22
+moves = {
+"light": ExtResource("2"),
+"medium": ExtResource("3"),
+"heavy": ExtResource("4"),
+"tech": ExtResource("5"),
+"grab": ExtResource("6"),
+"super": ExtResource("7"),
+"air": ExtResource("8")
+}

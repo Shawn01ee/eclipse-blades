@@ -1,0 +1,23 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "arin_air"
+display_name = "낙하베기"
+input_command = "공중 공격"
+startup_frames = 6
+active_frames = 8
+recovery_frames = 10
+damage = 110
+chip_damage = 11
+priority = 2
+hitstop = 8
+hitstop_edge = 11
+hitstun = 20
+blockstun = 14
+pushback_hit = 28
+pushback_block = 24
+hitboxes_by_frame = [[7, 14, 26, 18, 96, 78]]
+sound_event = "hit_m"

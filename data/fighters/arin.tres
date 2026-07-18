@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://combat/fighter_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/moves/arin_light.tres" id="2"]
+[ext_resource type="Resource" path="res://data/moves/arin_medium.tres" id="3"]
+[ext_resource type="Resource" path="res://data/moves/arin_heavy.tres" id="4"]
+[ext_resource type="Resource" path="res://data/moves/arin_tech.tres" id="5"]
+[ext_resource type="Resource" path="res://data/moves/arin_grab.tres" id="6"]
+[ext_resource type="Resource" path="res://data/moves/arin_super.tres" id="7"]
+[ext_resource type="Resource" path="res://data/moves/arin_air.tres" id="8"]
+
+[resource]
+script = ExtResource("1")
+id = "arin"
+display_name = "아야메"
+weapon_name = "세도검"
+style_note = "빠른 확신, 표준 거리의 슬라이서"
+color = Color(0.93, 0.91, 0.86, 1)
+max_hp = 925
+walk_f = 4000
+walk_b = 3300
+pushbox_hw = 32
+hurtbox_hw = 40
+hurtbox_h = 172
+edge_ratio_pct = 20
+moves = {
+"light": ExtResource("2"),
+"medium": ExtResource("3"),
+"heavy": ExtResource("4"),
+"tech": ExtResource("5"),
+"grab": ExtResource("6"),
+"super": ExtResource("7"),
+"air": ExtResource("8")
+}
