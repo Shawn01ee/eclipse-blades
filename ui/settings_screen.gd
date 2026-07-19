@@ -32,6 +32,12 @@ func _ready() -> void:
 	_toggle(v, "정타 하이라이트", "fx_highlight")
 	v.add_child(UiKit.vspace(14))
 
+	v.add_child(UiKit.label("모바일", 30))
+	_toggle(v, "터치 조작 표시", "touch_ui")
+	_slider(v, "터치 버튼 크기", "touch_size", 85, 120)
+	v.add_child(UiKit.label("변경 사항은 다음 전투부터 적용됩니다.", 14, UiKit.GRAY))
+	v.add_child(UiKit.vspace(14))
+
 	v.add_child(UiKit.label("대전", 30))
 	_slider(v, "CPU 난이도", "cpu_level", 1, 4)
 	v.add_child(UiKit.vspace(14))

@@ -18,6 +18,7 @@ const SUITES := [
 	preload("res://tests/t_bgm.gd"),
 	preload("res://tests/t_sfx.gd"),
 	preload("res://tests/t_ui_layout.gd"),
+	preload("res://tests/t_mobile_web.gd"),
 	preload("res://tests/t_character_identity.gd"),
 	preload("res://tests/t_signature_fx.gd"),
 	preload("res://tests/t_mujin.gd"),

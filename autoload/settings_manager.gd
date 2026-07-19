@@ -3,6 +3,7 @@ extends Node
 ## 키보드·게임패드가 같은 액션(명령 스트림)에 묶인다 (AC-08).
 
 const SAVE_PATH := "user://settings.json"
+const KOREAN_FONT: FontFile = preload("res://fonts/NotoSansKR-Game.ttf")
 
 # 기본 키보드 배치: P1 = 방향키 이동 + A/S/D 공격 (기술 = A+S 동시 / 패드 버튼)
 #                  P2 = J/K/L 이동 + U/I/O 공격 (패드 권장)
@@ -27,6 +28,7 @@ const ACTION_LABELS := {
 var data := {
 	"vol_master": 80, "vol_bgm": 70, "vol_sfx": 80,
 	"fx_shake": true, "fx_flash": true, "fx_rumble": true, "fx_highlight": true,
+	"touch_ui": true, "touch_size": 100,
 	"cpu_level": 2,
 	"keys": {},
 }
@@ -39,12 +41,9 @@ func _ready() -> void:
 
 
 func _setup_korean_font() -> void:
-	var f := SystemFont.new()
-	f.font_names = ["Apple SD Gothic Neo", "AppleGothic", "Malgun Gothic",
-		"Noto Sans KR", "Noto Sans CJK KR", "NanumGothic"]
-	if f.font_names.is_empty():
-		push_warning("시스템 한글 폰트를 찾지 못함 — 기본 폰트로 진행 (AC-10 대체 동작)")
-	ThemeDB.fallback_font = f
+	# 웹/iOS에는 macOS 시스템 한글 글꼴이 전달되지 않는다. 게임에서 사용하는 글자만
+	# 남긴 OFL Noto Sans KR을 포함해 모든 플랫폼에서 같은 글리프를 보장한다.
+	ThemeDB.fallback_font = KOREAN_FONT
 
 
 func load_settings() -> void:

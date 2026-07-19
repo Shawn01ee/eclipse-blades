@@ -12,9 +12,10 @@ signal pause_pressed
 const DEADZONE := 26.0
 const DIR_THRESH := 30.0
 const JUMP_THRESH := 34.0
+const SAFE_EDGE := 56.0
 
-var joy_center := Vector2(175, 560)
-var joy_radius := 96.0
+var joy_center := Vector2(170, 570)
+var joy_radius := 92.0
 var _joy_index := -1
 var _joy_vec := Vector2.ZERO
 
@@ -23,21 +24,40 @@ var buttons := {}
 var _btn_touch := {}          # touch_index → button_name
 var _held_actions := {}       # action → true (현재 눌림)
 
-var pause_rect := Rect2(1196, 18, 60, 56)
+var pause_rect := Rect2(608, 94, 64, 50)
 var _pause_index := -1
+var _ui_scale := 1.0
+var size_percent := 100
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE   # _input 에서 직접 처리
-	# 우측 공격 버튼 배치
-	var r := 52.0
-	buttons = {
-		"light": {"c": Vector2(1000, 604), "r": r, "action": "p1_light", "label": "약", "col": UiKit.INK},
-		"medium": {"c": Vector2(1108, 574), "r": r, "action": "p1_medium", "label": "중", "col": UiKit.INK},
-		"heavy": {"c": Vector2(1206, 528), "r": r + 4, "action": "p1_heavy", "label": "강", "col": UiKit.INK},
-		"tech": {"c": Vector2(1042, 494), "r": r - 4, "action": "p1_tech", "label": "기", "col": UiKit.GRAY},
-		"super": {"c": Vector2(1150, 458), "r": r - 4, "action": "p1_super", "label": "오의", "col": UiKit.SEAL},
+	var layout := layout_for_size(size_percent)
+	_ui_scale = layout["scale"]
+	joy_radius = layout["joy_radius"]
+	joy_center = layout["joy_center"]
+	pause_rect = layout["pause_rect"]
+	buttons = layout["buttons"]
+
+
+## 우측 공격 버튼과 조이스틱을 iPhone 가로 노치/홈 인디케이터 안쪽에 배치한다.
+static func layout_for_size(percent: int) -> Dictionary:
+	var scale := clampf(float(percent) / 100.0, 0.85, 1.2)
+	var jr := 92.0 * scale
+	var r := 54.0 * scale
+	return {
+		"scale": scale,
+		"joy_radius": jr,
+		"joy_center": Vector2(SAFE_EDGE + jr, 720.0 - SAFE_EDGE - jr),
+		"pause_rect": Rect2(608, 94, 64, 50),
+		"buttons": {
+			"light": {"c": Vector2(970, 605), "r": r, "action": "p1_light", "label": "약", "col": UiKit.INK},
+			"medium": {"c": Vector2(1072, 574), "r": r, "action": "p1_medium", "label": "중", "col": UiKit.INK},
+			"heavy": {"c": Vector2(1160, 522), "r": r + 3.0 * scale, "action": "p1_heavy", "label": "강", "col": UiKit.INK},
+			"tech": {"c": Vector2(1008, 493), "r": r - 3.0 * scale, "action": "p1_tech", "label": "기", "col": UiKit.GRAY},
+			"super": {"c": Vector2(1108, 454), "r": r - 3.0 * scale, "action": "p1_super", "label": "오의", "col": UiKit.SEAL},
+		},
 	}
 
 
@@ -96,7 +116,9 @@ func _on_down(index: int, pos: Vector2) -> void:
 	# 조이스틱: 화면 좌측 절반
 	if pos.x < 620 and _joy_index == -1:
 		_joy_index = index
-		joy_center = Vector2(clampf(pos.x, 120, 460), clampf(pos.y, 360, 660))
+		joy_center = Vector2(
+				clampf(pos.x, SAFE_EDGE + joy_radius, 500.0),
+				clampf(pos.y, 360.0 + joy_radius * 0.2, 720.0 - SAFE_EDGE - joy_radius))
 		_joy_vec = Vector2.ZERO
 		_apply_joy()
 		accept_event()
@@ -158,7 +180,7 @@ func _apply_joy() -> void:
 
 func _draw() -> void:
 	# 조이스틱 베이스
-	draw_circle(joy_center, joy_radius, Color(UiKit.INK, 0.10))
+	draw_circle(joy_center, joy_radius, Color(UiKit.INK, 0.08))
 	draw_arc(joy_center, joy_radius, 0, TAU, 48, Color(UiKit.INK, 0.35), 2.5)
 	# 방향 힌트
 	var f := ThemeDB.fallback_font
@@ -175,7 +197,7 @@ func _draw() -> void:
 	for name in buttons:
 		var b: Dictionary = buttons[name]
 		var pressed: bool = _held_actions.has(b["action"])
-		var fill: Color = Color(b["col"], 0.85) if pressed else Color(UiKit.PAPER_LIGHT, 0.72)
+		var fill: Color = Color(b["col"], 0.88) if pressed else Color(UiKit.PAPER_LIGHT, 0.60)
 		draw_circle(b["c"], b["r"], fill)
 		draw_arc(b["c"], b["r"], 0, TAU, 40, Color(b["col"], 0.9), 2.5)
 		var tcol: Color = UiKit.PAPER_LIGHT if pressed else b["col"]
@@ -193,7 +215,13 @@ func _draw() -> void:
 
 
 ## 터치 UI를 보여줄지 판단
-static func should_show() -> bool:
+static func should_show(enabled: bool = true) -> bool:
+	if not enabled:
+		return false
+	return is_mobile_target()
+
+
+static func is_mobile_target() -> bool:
 	if OS.get_environment("ECLIPSE_TOUCH") == "1":
 		return true
 	if OS.has_feature("web") or OS.has_feature("mobile"):

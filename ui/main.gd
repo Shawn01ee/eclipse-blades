@@ -7,6 +7,7 @@ const SCREENS := {
 	"settings": preload("res://ui/settings_screen.gd"),
 	"match": preload("res://ui/match_screen.gd"),
 }
+const MobileGuard := preload("res://ui/mobile_guard.gd")
 
 var current: Node = null
 
@@ -37,6 +38,10 @@ func _ready() -> void:
 			goto("menu")
 	if OS.get_environment("ECLIPSE_UI_SHOT") != "":
 		add_child(preload("res://ui/ui_shot_helper.gd").new())
+	var mobile_guard := MobileGuard.new()
+	mobile_guard.position = Vector2.ZERO
+	mobile_guard.size = Vector2(1280, 720)
+	add_child(mobile_guard)
 
 
 func goto(screen: String) -> void:
@@ -50,6 +55,11 @@ func goto(screen: String) -> void:
 	if current is Control:
 		current.position = Vector2.ZERO
 		current.size = Vector2(1280, 720)
+		# ThemeDB 폴백만 바꾸면 웹의 일부 Button/Label이 초기 기본 글꼴을 계속 쓴다.
+		# 화면 루트 테마에 내장 한글 글꼴을 명시해 모든 자식 Control에 상속한다.
+		var screen_theme := Theme.new()
+		screen_theme.default_font = ThemeDB.fallback_font
+		current.theme = screen_theme
 	add_child(current)
 	# 개발용 스크린샷 훅
 	if screen == "match" and OS.get_environment("ECLIPSE_SHOT") != "":

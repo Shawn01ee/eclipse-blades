@@ -72,8 +72,9 @@ func _ready() -> void:
 	overlay.visible = GameState.mode == GameState.Mode.TRAINING
 	add_child(overlay)
 	# 터치 컨트롤 (모바일/웹/터치 기기)
-	if TouchControls.should_show():
+	if TouchControls.should_show(bool(SettingsManager.data.get("touch_ui", true))):
 		touch = TouchControls.new()
+		touch.size_percent = int(SettingsManager.data.get("touch_size", 100))
 		touch.pause_pressed.connect(_toggle_pause)
 		add_child(touch)
 	_flash = ColorRect.new()

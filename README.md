@@ -15,7 +15,7 @@
 # 게임
 godot --path .
 
-# 테스트 (185건)
+# 테스트 (201건)
 godot --headless --path . --script res://tests/run_tests.gd
 
 # 소크 100경기
@@ -27,6 +27,13 @@ godot --headless --path . --script res://tests/run_tests.gd
 ## GitHub Pages 배포
 
 `main` 브랜치의 `build/web`이 변경되면 `.github/workflows/deploy-pages.yml`이 정적 웹 빌드를 GitHub Pages에 자동 배포합니다. Godot에서 새 웹 빌드를 내보낸 뒤 해당 폴더를 커밋하고 푸시하면 됩니다.
+
+## 모바일 웹
+
+- iPhone/Android에서는 가로 화면을 기준으로 하며, 세로로 들면 회전 안내가 전투를 잠시 멈춥니다.
+- 노치·홈 인디케이터를 피한 터치 조작을 제공하고 설정에서 표시 여부와 크기(85~120%)를 바꿀 수 있습니다.
+- 첫 실행에는 엔진(WASM)과 에셋을 내려받으며 설치는 필요 없습니다. 브라우저 정책상 첫 터치 뒤부터 소리가 납니다.
+- 웹 패키지에는 사용하지 않는 전투 스킨을 넣지 않고, 한글 글꼴은 실제 게임 문자를 추린 OFL Noto Sans KR을 포함합니다.
 
 ## 조작
 

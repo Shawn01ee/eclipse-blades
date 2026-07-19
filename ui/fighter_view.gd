@@ -60,10 +60,17 @@ func setup(w: CombatWorld, i: int, fd_color: Color, char_id: String) -> void:
 	weapon_len = {"daeru": 140.0, "mujin": 118.0}.get(char_id, 95.0)
 	weapon_kind = {"arin": "sword", "daeru": "polescythe", "han": "daggers",
 			"myo": "chain", "mujin": "sword"}.get(char_id, "sword")
-	sprite_tex = _load_tex("res://art/sprites/%s.png" % char_id)
-	# 현재 아트 방향은 스킨 없는 관절형 수묵 실루엣. 비활성 자산은 런타임에 로드하지 않는다.
-	combat_atlas = _load_tex("res://art/combat_atlas/%s.png" % char_id) if COMBAT_SKINS_ENABLED else null
-	_load_sheets(char_id)
+	# 현재 아트 방향은 스킨 없는 관절형 수묵 실루엣. 꺼진 스킨·시트는 모바일 메모리에도 싣지 않는다.
+	if COMBAT_SKINS_ENABLED:
+		sprite_tex = _load_tex("res://art/sprites/%s.png" % char_id)
+		combat_atlas = _load_tex("res://art/combat_atlas/%s.png" % char_id)
+		_load_sheets(char_id)
+	else:
+		sprite_tex = null
+		combat_atlas = null
+		has_sheets = false
+		strips.clear()
+		sheet_meta.clear()
 
 
 func _load_tex(path: String) -> Texture2D:
