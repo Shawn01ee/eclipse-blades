@@ -38,6 +38,8 @@ static func run(t, _args: Dictionary) -> void:
 	var preset_file := FileAccess.open("res://export_presets.cfg", FileAccess.READ)
 	var preset := preset_file.get_as_text() if preset_file != null else ""
 	t.ok(preset.contains("variant/thread_support=false"), "iOS 호환 단일 스레드 웹 빌드")
+	t.ok(preset.contains("html/experimental_virtual_keyboard=true"),
+			"모바일 방 코드 입력용 웹 가상 키보드 포함")
 	t.ok(preset.contains("viewport-fit=cover"), "iPhone 노치 대응 viewport")
 	t.ok(preset.contains("requestFullscreen") \
 			and preset.contains("screen.orientation.lock('landscape')"),
@@ -75,6 +77,12 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(select_source.contains("card.gui_input.connect(_on_card_input.bind(k))") \
 			and select_source.contains("touch_bar.visible = step == 2"),
 			"캐릭터 카드·난이도·시작 터치 경로 연결")
+	var lobby_file := FileAccess.open("res://ui/online_lobby.gd", FileAccess.READ)
+	var lobby_source := lobby_file.get_as_text() if lobby_file != null else ""
+	t.ok(lobby_source.contains("virtual_keyboard_show_on_focus = true") \
+			and lobby_source.contains("DisplayServer.virtual_keyboard_show") \
+			and lobby_source.contains("DisplayServer.clipboard_get()"),
+			"방 코드 키보드와 붙여넣기 대체 경로 제공")
 	var touch_file := FileAccess.open("res://ui/touch_controls.gd", FileAccess.READ)
 	var touch_source := touch_file.get_as_text() if touch_file != null else ""
 	t.ok(touch_source.contains("get_global_transform_with_canvas().affine_inverse()") \

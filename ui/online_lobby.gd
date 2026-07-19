@@ -48,6 +48,8 @@ func _build_entry() -> void:
 	code_input.max_length = 6
 	code_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	code_input.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_DEFAULT
+	code_input.virtual_keyboard_enabled = true
+	code_input.virtual_keyboard_show_on_focus = true
 	code_input.add_theme_font_size_override("font_size", 30)
 	code_input.add_theme_color_override("font_color", UiKit.INK)
 	code_input.add_theme_color_override("font_placeholder_color", UiKit.GRAY)
@@ -68,11 +70,19 @@ func _build_entry() -> void:
 			code_input.text = clean
 			code_input.caret_column = clean.length())
 	code_input.text_submitted.connect(func(_value: String): _join_room())
+	code_input.gui_input.connect(_on_code_input_event)
 	entry_panel.add_child(code_input)
+	var join_row := HBoxContainer.new()
+	join_row.add_theme_constant_override("separation", 12)
+	entry_panel.add_child(join_row)
+	var paste := UiKit.button("코드 붙여넣기", 22)
+	paste.custom_minimum_size = Vector2(234, 60)
+	paste.pressed.connect(_paste_code)
+	join_row.add_child(paste)
 	var join := UiKit.button("방 참가", 28)
-	join.custom_minimum_size = Vector2(480, 60)
+	join.custom_minimum_size = Vector2(234, 60)
 	join.pressed.connect(_join_room)
-	entry_panel.add_child(join)
+	join_row.add_child(join)
 	var back := UiKit.button("뒤로", 22)
 	back.pressed.connect(_back_to_menu)
 	entry_panel.add_child(back)
@@ -142,6 +152,24 @@ func _join_room() -> void:
 	AudioManager.play("ui_ok")
 	if OnlineSession.connect_room(code_input.text):
 		_refresh()
+
+
+func _on_code_input_event(event: InputEvent) -> void:
+	if event is InputEventScreenTouch and event.pressed:
+		code_input.grab_focus()
+		DisplayServer.virtual_keyboard_show(code_input.text, code_input.get_global_rect(),
+				DisplayServer.KEYBOARD_TYPE_DEFAULT, 6, code_input.caret_column, code_input.caret_column)
+		code_input.accept_event()
+
+
+func _paste_code() -> void:
+	AudioManager.play("ui_move")
+	var clean := OnlineSession.sanitize_room_code(DisplayServer.clipboard_get())
+	if clean.length() != 6:
+		_show_error("복사한 방 코드를 찾지 못했습니다.")
+		return
+	code_input.text = clean
+	code_input.caret_column = clean.length()
 
 
 func _choose(index: int) -> void:

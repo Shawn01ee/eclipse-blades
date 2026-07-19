@@ -136,6 +136,23 @@ func has_inputs(tick: int) -> bool:
 	return _inputs[0].has(tick) and _inputs[1].has(tick)
 
 
+func has_input(slot: int, tick: int) -> bool:
+	return slot in [0, 1] and _inputs[slot].has(tick)
+
+
+func get_input(slot: int, tick: int, default_value: int = 0) -> int:
+	if not has_input(slot, tick):
+		return default_value
+	return int(_inputs[slot][tick])
+
+
+func discard_inputs_before(tick: int) -> void:
+	for slot in 2:
+		for key in _inputs[slot].keys():
+			if int(key) < tick:
+				_inputs[slot].erase(key)
+
+
 func take_inputs(tick: int) -> Array:
 	if not has_inputs(tick):
 		return []

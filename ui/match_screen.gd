@@ -8,6 +8,7 @@ const FxLayer := preload("res://ui/fx_layer.gd")
 const Hud := preload("res://ui/hud.gd")
 const Overlay := preload("res://ui/training_overlay.gd")
 const TouchControls := preload("res://ui/touch_controls.gd")
+const RollbackTimelineScript := preload("res://combat/rollback_timeline.gd")
 
 var world: CombatWorld
 var match_seed := 1
@@ -37,11 +38,7 @@ var _dim: ColorRect
 var _dim_a := 0.0
 var _ended := false
 var _bgm_danger := false
-var _online_send_tick := 0
-var _online_sim_tick := 0
-
-const ONLINE_INPUT_LEAD := 8
-const ONLINE_MAX_CATCHUP := 3
+var _online_timeline = null
 
 
 func _ready() -> void:
@@ -62,6 +59,7 @@ func _ready() -> void:
 		OnlineSession.peer_left.connect(_on_online_peer_left)
 		OnlineSession.desync_detected.connect(_on_online_desync)
 		OnlineSession.begin_play()
+		_online_timeline = RollbackTimelineScript.new(world, OnlineSession.role)
 
 	scene_root = Node2D.new()
 	add_child(scene_root)
@@ -135,17 +133,23 @@ func _physics_process(_dt: float) -> void:
 func _online_physics_frame() -> void:
 	# 각 기기는 자기 캐릭터와 관계없이 P1 조작계를 사용한다. 서버의 slot이
 	# 입력을 월드 P1/P2 순서로 배치하므로 모바일에서도 같은 UI를 쓸 수 있다.
-	if _online_send_tick <= _online_sim_tick + ONLINE_INPUT_LEAD:
-		OnlineSession.submit_input(_online_send_tick, _read_word(1))
-		_online_send_tick += 1
-	var caught_up := 0
-	while OnlineSession.has_inputs(_online_sim_tick) and caught_up < ONLINE_MAX_CATCHUP:
-		var pair := OnlineSession.take_inputs(_online_sim_tick)
-		_advance_world(int(pair[0]), int(pair[1]))
-		_online_sim_tick += 1
-		caught_up += 1
-		if _online_sim_tick % 120 == 0:
-			OnlineSession.send_hash(_online_sim_tick, world.state_hash())
+	var local_word := _read_word(1) if _online_timeline.needs_local_input(OnlineSession) else 0
+	var result: Dictionary = _online_timeline.frame(local_word, OnlineSession)
+	for update in result["record_updates"]:
+		var tick: int = int(update[0])
+		while recording.size() <= tick:
+			recording.append([0, 0])
+		recording[tick] = update[1]
+	for event in result["events"]:
+		_handle_event(event)
+	for hash_pair in result["hashes"]:
+		OnlineSession.send_hash(int(hash_pair[0]), int(hash_pair[1]))
+	_sync_bgm_intensity()
+	_sync_views()
+	# 예측 중 나온 승패는 상대 입력으로 뒤집힐 수 있으므로 확정 뒤에만 표시한다.
+	if world.s["phase"] == SimC.PH_MATCH_END and not _ended \
+			and _online_timeline.is_current_state_confirmed():
+		_show_results()
 
 
 func _advance_world(w1: int, w2: int) -> void:

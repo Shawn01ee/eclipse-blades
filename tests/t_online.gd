@@ -2,6 +2,31 @@ extends RefCounted
 ## 온라인 방 코드와 틱 입력 큐의 결정론적 경계 검사.
 
 const SessionScript := preload("res://autoload/online_session.gd")
+const Rollback := preload("res://combat/rollback_timeline.gd")
+const H := preload("res://tests/t_help.gd")
+
+
+class FakeChannel extends RefCounted:
+	var local_slot := 0
+	var inputs := [{}, {}]
+
+	func _init(slot: int = 0) -> void:
+		local_slot = slot
+
+	func submit_input(tick: int, word: int) -> void:
+		inputs[local_slot][tick] = word
+
+	func has_input(slot: int, tick: int) -> bool:
+		return inputs[slot].has(tick)
+
+	func get_input(slot: int, tick: int, default_value: int = 0) -> int:
+		return int(inputs[slot].get(tick, default_value))
+
+	func discard_inputs_before(tick: int) -> void:
+		for slot in 2:
+			for key in inputs[slot].keys():
+				if int(key) < tick:
+					inputs[slot].erase(key)
 
 
 static func run(t, _args: Dictionary) -> void:
@@ -23,3 +48,42 @@ static func run(t, _args: Dictionary) -> void:
 			"P1/P2 슬롯 순서로 입력 반환")
 	t.ok(not session.has_inputs(7), "소비한 틱 입력은 큐에서 제거")
 	session.free()
+
+	# 상대 입력이 4틱 늦게 와도 로컬은 즉시 진행하고, 도착 뒤 권위 상태로 복원한다.
+	var predicted_world := H.mk(0, 1, 31)
+	var authoritative := H.mk(0, 1, 31)
+	var timeline = Rollback.new(predicted_world, 0)
+	var channel := FakeChannel.new(0)
+	var p1_words: Array = []
+	var p2_words: Array = []
+	for tick in 180:
+		var p1 := SimC.B_RIGHT if tick < 35 else (SimC.B_L if tick in [48, 92] else 0)
+		var p2 := SimC.B_LEFT if tick < 45 else (SimC.B_H if tick in [52, 104] else 0)
+		p1_words.append(p1)
+		p2_words.append(p2)
+		authoritative.step(p1, p2)
+	var corrected := 0
+	for frame in 180:
+		if frame >= 4:
+			channel.inputs[1][frame - 4] = p2_words[frame - 4]
+		var result: Dictionary = timeline.frame(p1_words[frame], channel)
+		corrected += int(result["corrected_ticks"])
+	for tick in range(176, 180):
+		channel.inputs[1][tick] = p2_words[tick]
+	var final_sync: Dictionary = timeline.sync(channel)
+	corrected += int(final_sync["corrected_ticks"])
+	t.eq(timeline.current_tick, 180, "4틱 원격 지연에도 로컬 시뮬은 매 프레임 진행")
+	t.ok(corrected > 0, "늦게 온 공격·방향 입력 구간을 실제로 롤백 보정")
+	t.eq(predicted_world.state_hash(), authoritative.state_hash(),
+			"모든 입력 도착 뒤 권위 시뮬 상태와 해시 일치")
+
+	# 연결이 멎으면 8틱까지만 예측하고 이후에는 같은 로컬 입력 틱을 보존한다.
+	var capped_world := H.mk(0, 1, 41)
+	var capped := Rollback.new(capped_world, 0)
+	var silent := FakeChannel.new(0)
+	for frame in 20:
+		var word := SimC.B_L if frame == 8 else 0
+		capped.frame(word, silent)
+	t.eq(capped.current_tick, Rollback.MAX_PREDICTION, "원격 단절 시 최대 8틱 뒤 안전 정지")
+	t.eq(silent.get_input(0, Rollback.MAX_PREDICTION, -1), SimC.B_L,
+			"정지 중 같은 틱 로컬 입력을 덮어쓰지 않음")
