@@ -25,6 +25,7 @@ extends Resource
 @export var pushback_block: int = 26
 @export var meter_gain: int = 0
 @export var meter_cost: int = 0
+@export var energy_cost: int = 0              # 기술 남용 방지용 기력 소모(0=기본기)
 ## [{"targets": ["move_id"], "from": f, "to": f, "on": ["hit","block"]}]
 @export var cancel_windows: Array = []
 ## [[from_f, to_f, x, y, w, h], ...]  x=몸 중심에서 전방 오프셋(px), y=지면 기준 아래변, w 전방, h 위

@@ -35,6 +35,7 @@ var _warned := {}
 var _pool: Array = []
 var _pool_i := 0
 var _bgm_warned := {}
+var _bgm_streams := {}
 var _bgm_players: Array = []
 var _bgm_mode := ""
 var _bgm_active := -1
@@ -51,6 +52,11 @@ func _ready() -> void:
 		var pl := AudioStreamPlayer.new()
 		add_child(pl)
 		_pool.append(pl)
+	# 웹에서는 경기 도중 WAV를 처음 읽고 복제하면 같은 메인 스레드의 렌더와
+	# 오디오 공급이 함께 밀린다. 로딩 화면이 남아 있을 때 세 곡을 한 번만 준비한다.
+	if DisplayServer.get_name() != "headless" and OS.get_environment("ECLIPSE_SHOT") == "":
+		for mode in BGM_FILES:
+			_bgm_stream(mode)
 
 
 func play(ev: String, pitch: float = 1.0, gain_scale: float = 1.0) -> void:
@@ -92,6 +98,8 @@ func _ensure_bgm_players() -> void:
 
 
 func _bgm_stream(mode: String):
+	if _bgm_streams.has(mode):
+		return _bgm_streams[mode]
 	var path: String = BGM_FILES.get(mode, "")
 	if path == "" or not ResourceLoader.exists(path):
 		if not _bgm_warned.has(mode):
@@ -105,6 +113,7 @@ func _bgm_stream(mode: String):
 		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
 		stream.loop_begin = 0
 		stream.loop_end = stream.data.size() / 2   # 16bit mono
+	_bgm_streams[mode] = stream
 	return stream
 
 
@@ -160,6 +169,7 @@ func stop_all() -> void:
 			pl.stop()
 			pl.stream = null
 	_streams.clear()
+	_bgm_streams.clear()
 
 
 func _process(dt: float) -> void:

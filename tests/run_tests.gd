@@ -11,6 +11,7 @@ const SUITES := [
 	preload("res://tests/t_resolution.gd"),
 	preload("res://tests/t_hitstop.gd"),
 	preload("res://tests/t_nerve.gd"),
+	preload("res://tests/t_energy.gd"),
 	preload("res://tests/t_reset.gd"),
 	preload("res://tests/t_jump.gd"),
 	preload("res://tests/t_ai_actions.gd"),

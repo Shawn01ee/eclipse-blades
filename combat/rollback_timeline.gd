@@ -3,6 +3,7 @@ extends RefCounted
 ## 온라인 입력을 즉시 시뮬하고, 늦게 도착한 상대 입력만 짧게 되감아 보정한다.
 
 const MAX_PREDICTION := 8
+const INPUT_DELAY := 2
 const HISTORY_TICKS := 120
 const HASH_INTERVAL := 120
 const DIRECTION_MASK := SimC.B_LEFT | SimC.B_RIGHT | SimC.B_UP | SimC.B_DOWN
@@ -17,6 +18,7 @@ var _used_inputs := {}
 var _event_keys := {}
 var _checkpoint_hashes := {}
 var _next_hash_tick := HASH_INTERVAL
+var _next_local_tick := 0
 
 
 func _init(world_ref: CombatWorld, slot: int) -> void:
@@ -26,8 +28,14 @@ func _init(world_ref: CombatWorld, slot: int) -> void:
 
 ## 한 렌더 틱의 로컬 입력을 전송하고, 가능한 경우 즉시 한 틱 전진한다.
 func frame(local_word: int, channel: Object) -> Dictionary:
-	if needs_local_input(channel):
-		channel.submit_input(current_tick, local_word)
+	# 같은 틱을 보내고 즉시 예측하던 방식은 왕복 60ms에서도 공격 입력마다
+	# 2~4틱 재연산을 만들었다. 두 틱 앞 입력을 미리 보내 짧은 입력 지연으로
+	# 대부분의 롤백을 피한다. 첫 프레임의 앞 두 틱은 중립 입력이다.
+	var send_through := current_tick + INPUT_DELAY
+	while _next_local_tick <= send_through:
+		var word := local_word if _next_local_tick == send_through else 0
+		channel.submit_input(_next_local_tick, word)
+		_next_local_tick += 1
 	var result := sync(channel)
 	result["stepped"] = false
 	if current_tick > confirmed_through + MAX_PREDICTION:
@@ -48,7 +56,7 @@ func frame(local_word: int, channel: Object) -> Dictionary:
 
 
 func needs_local_input(channel: Object) -> bool:
-	return not channel.has_input(local_slot, current_tick)
+	return _next_local_tick <= current_tick + INPUT_DELAY
 
 
 ## 새 원격 입력만 반영한다. 테스트와 일시적인 렌더 정지 뒤 재동기화에도 사용한다.
@@ -59,7 +67,11 @@ func sync(channel: Object) -> Dictionary:
 		"hashes": [],
 		"corrected_ticks": 0,
 	}
-	var earliest := _first_mismatch(channel)
+	# 확정 구간은 순서대로만 늘어난다(WebSocket도 메시지 순서를 보장).
+	# 이미 확인한 120틱 전체를 매 프레임 다시 훑지 않고 새 확정분만 비교한다.
+	var previous_confirmed := confirmed_through
+	_advance_confirmed(channel)
+	var earliest := _first_mismatch(channel, previous_confirmed + 1, confirmed_through + 1)
 	if earliest >= 0:
 		var replay_end := current_tick
 		world.restore(_snapshots[earliest])
@@ -78,7 +90,6 @@ func sync(channel: Object) -> Dictionary:
 			result["corrected_ticks"] += 1
 			_store_checkpoint(tick + 1)
 
-	_advance_confirmed(channel)
 	while _next_hash_tick <= confirmed_through + 1:
 		if _checkpoint_hashes.has(_next_hash_tick):
 			result["hashes"].append([_next_hash_tick, int(_checkpoint_hashes[_next_hash_tick])])
@@ -94,10 +105,9 @@ func used_pair(tick: int) -> Array:
 	return _used_inputs.get(tick, [])
 
 
-func _first_mismatch(channel: Object) -> int:
+func _first_mismatch(channel: Object, from_tick: int, to_tick: int) -> int:
 	var remote_slot := 1 - local_slot
-	var oldest := maxi(0, current_tick - HISTORY_TICKS)
-	for tick in range(oldest, current_tick):
+	for tick in range(maxi(0, from_tick), mini(current_tick, to_tick)):
 		if not channel.has_input(remote_slot, tick):
 			continue
 		var used: Array = _used_inputs.get(tick, [])

@@ -57,6 +57,11 @@ func _reach_of(w: CombatWorld, slot: String) -> int:
 	return best
 
 
+func _can_use_slot(w: CombatWorld, me: Dictionary, slot: String) -> bool:
+	var mv: Dictionary = w.chars[pi]["moves"].get(slot, {})
+	return not mv.is_empty() and int(me["energy"]) >= int(mv.get("energy_cost", 0))
+
+
 func think(w: CombatWorld) -> int:
 	var me: Dictionary = w.s["p"][pi]
 	var op: Dictionary = w.s["p"][1 - pi]
@@ -83,7 +88,8 @@ func think(w: CombatWorld) -> int:
 					return 0
 				if not targets.is_empty():
 					var follow: Dictionary = w.chars[pi]["moves_by_id"].get(targets[0], {})
-					return Registry.SLOT_BUTTON.get(follow.get("slot", ""), 0)
+					if int(me["energy"]) >= int(follow.get("energy_cost", 0)):
+						return Registry.SLOT_BUTTON.get(follow.get("slot", ""), 0)
 
 	# 공중: 접근했으면 공중 공격 1회
 	if me["state"] == SimC.ST_JUMP and not me["air_done"]:
@@ -147,18 +153,20 @@ func think(w: CombatWorld) -> int:
 		"daeru": mujin_motion_chance = 60
 	if w.chars[pi]["id"] == "mujin" and gap > 90 and gap <= 245 \
 			and _roll(100) < mujin_motion_chance:
-		if me["nerve"] >= SimC.NERVE_MAX and gap <= 220:
+		if me["nerve"] >= SimC.NERVE_MAX and gap <= 220 \
+				and _can_use_slot(w, me, "motion_nerve"):
 			return _start_action(ActionLibrary.Action.MOTION_HEAVY, facing)
-		if gap > 175:
+		if gap > 175 and _can_use_slot(w, me, "motion_heavy"):
 			return _start_action(ActionLibrary.Action.MOTION_HEAVY, facing)
-		if gap <= 155:
+		if gap <= 155 and _can_use_slot(w, me, "motion_medium"):
 			return _start_action(ActionLibrary.Action.MOTION_MEDIUM, facing)
-		return _start_action(ActionLibrary.Action.MOTION_LIGHT, facing)
+		if _can_use_slot(w, me, "motion_light"):
+			return _start_action(ActionLibrary.Action.MOTION_LIGHT, facing)
 
 	# 카게로는 근접 난타보다 사슬 끝거리와 끌어오기를 우선한다.
 	if w.chars[pi]["id"] == "myo" and gap > 125:
 		var hook_chance := 62 if w.chars[1 - pi]["id"] == "arin" else 42
-		if gap <= r_t + 20 and _roll(100) < hook_chance:
+		if gap <= r_t + 20 and _can_use_slot(w, me, "tech") and _roll(100) < hook_chance:
 			return _start_action(ActionLibrary.Action.TECH, facing)
 		if gap >= 185 and gap <= r_h + 15 and _roll(100) < 32:
 			return _start_action(ActionLibrary.Action.HEAVY, facing)
@@ -170,7 +178,8 @@ func think(w: CombatWorld) -> int:
 			return _dir_word(-1, facing)
 
 	# 하야테는 짧은 단도 사거리 밖에서 파고들기로 중거리 벽을 넘는다.
-	if w.chars[pi]["id"] == "han" and gap > 105 and gap <= 195 and _roll(100) < 38:
+	if w.chars[pi]["id"] == "han" and gap > 105 and gap <= 195 \
+			and _can_use_slot(w, me, "tech") and _roll(100) < 38:
 		return _start_action(ActionLibrary.Action.TECH, facing)
 
 	# 처벌: 상대 후딜/무기 튕김 포착
@@ -190,7 +199,7 @@ func think(w: CombatWorld) -> int:
 	# 근접
 	if gap <= 95:
 		var c := _roll(100)
-		if c < 18:
+		if c < 18 and _can_use_slot(w, me, "grab"):
 			return _start_action(ActionLibrary.Action.GRAB, facing)
 		elif c < 45:
 			return _start_action(ActionLibrary.Action.LIGHT, facing)
@@ -219,7 +228,8 @@ func think(w: CombatWorld) -> int:
 			return _dir_word(1, facing)
 
 	# 원거리: 접근 (+ 긴 기술 견제, 가끔 점프 인)
-	if r_t > r_m and gap <= r_t + 15 and _roll(100) < 30:
+	if r_t > r_m and gap <= r_t + 15 and _can_use_slot(w, me, "tech") \
+			and _roll(100) < 30:
 		return _start_action(ActionLibrary.Action.TECH, facing)
 	if gap > 130 and gap < 360 and level >= 2 and _roll(100) < 12:
 		return _start_action(ActionLibrary.Action.JUMP_IN, facing)

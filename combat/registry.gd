@@ -52,7 +52,7 @@ static func bake(fd: FighterData) -> Dictionary:
 			"stop": mv.hitstop, "stop_edge": mv.hitstop_edge,
 			"hitstun": mv.hitstun, "blockstun": mv.blockstun,
 			"push_hit": mv.pushback_hit * SimC.FP, "push_block": mv.pushback_block * SimC.FP,
-			"meter_cost": mv.meter_cost,
+			"meter_cost": mv.meter_cost, "energy_cost": mv.energy_cost,
 			"cancels": mv.cancel_windows,
 			"boxes": mv.hitboxes_by_frame,
 			"motion": mv.motion_frames,

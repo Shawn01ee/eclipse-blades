@@ -11,6 +11,7 @@ startup_frames = 9
 active_frames = 2
 recovery_frames = 23
 damage = 175
+energy_cost = 20
 chip_damage = 0
 priority = 1
 hitstun = 14

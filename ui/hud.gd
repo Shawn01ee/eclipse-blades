@@ -1,5 +1,5 @@
 extends Control
-## HUD: 체력·사맥 3칸·라운드·타이머만 (기획 원칙: 정보 최소화).
+## HUD: 체력·기력·사맥 3칸·라운드·타이머 (기획 원칙: 정보 최소화).
 
 var world: CombatWorld
 var names := ["", ""]
@@ -9,6 +9,7 @@ var _hp := [1000.0, 1000.0]
 var _ghost := [1000.0, 1000.0]
 var _max_hp := [1000.0, 1000.0]
 var _nerve := [0, 0]
+var _energy := [SimC.ENERGY_MAX, SimC.ENERGY_MAX]
 var _wins := [0, 0]
 var _timer := 60
 var _combo := [0, 0]
@@ -59,6 +60,7 @@ func sync() -> void:
 	for i in 2:
 		_hp[i] = float(world.s["p"][i]["hp"])
 		_nerve[i] = world.s["p"][i]["nerve"]
+		_energy[i] = world.s["p"][i]["energy"]
 		_combo[i] = world.s["p"][i]["combo"]
 		if _combo[i] >= 2:
 			_combo_a[i] = 1.5
@@ -102,6 +104,10 @@ func _draw() -> void:
 	# 체력 바 (바깥에서 안으로 소모)
 	_bar(Rect2(60, 38, 500, 26), _hp[0] / _max_hp[0], _ghost[0] / _max_hp[0], false)
 	_bar(Rect2(720, 38, 500, 26), _hp[1] / _max_hp[1], _ghost[1] / _max_hp[1], true)
+	_energy_bar(Rect2(60, 68, 180, 6), float(_energy[0]) / SimC.ENERGY_MAX, false)
+	_energy_bar(Rect2(1040, 68, 180, 6), float(_energy[1]) / SimC.ENERGY_MAX, true)
+	draw_string(f, Vector2(246, 76), "기력", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UiKit.GRAY)
+	draw_string(f, Vector2(994, 76), "기력", HORIZONTAL_ALIGNMENT_RIGHT, 40, 12, UiKit.GRAY)
 	draw_string(f, Vector2(62, 88), names[0] + " · " + weapons[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UiKit.INK)
 	draw_string(f, Vector2(1000, 88), names[1] + " · " + weapons[1], HORIZONTAL_ALIGNMENT_RIGHT, 218, 18, UiKit.INK)
 	# 사맥 3칸 (마름모)
@@ -161,3 +167,11 @@ func _bar(r: Rect2, ratio: float, ghost: float, mirror: bool) -> void:
 	else:
 		draw_rect(Rect2(r.end.x - gw, r.position.y, gw, r.size.y), UiKit.GRAY)
 		draw_rect(Rect2(r.end.x - w, r.position.y, w, r.size.y), UiKit.INK)
+
+
+func _energy_bar(r: Rect2, ratio: float, mirror: bool) -> void:
+	draw_rect(r, Color(UiKit.GRAY, 0.28))
+	var w := r.size.x * clampf(ratio, 0.0, 1.0)
+	var x := r.end.x - w if mirror else r.position.x
+	draw_rect(Rect2(x, r.position.y, w, r.size.y), UiKit.SEAL)
+	draw_rect(r.grow(1), UiKit.INK, false, 1.0)

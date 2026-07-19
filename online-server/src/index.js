@@ -117,7 +117,9 @@ export class GameRoom extends DurableObject {
         if (tick === null || word === null) return;
         attachment.lastTick = tick;
         ws.serializeAttachment(attachment);
-        this.#broadcast({ t: "input", slot: attachment.slot, k: tick, w: word });
+        // 보낸 쪽은 입력을 이미 로컬 큐에 저장한다. 상대에게만 중계해 각
+        // 클라이언트의 패킷 파싱을 120회/초에서 60회/초로 줄인다.
+        this.#broadcast({ t: "input", slot: attachment.slot, k: tick, w: word }, ws);
         return;
       }
       case "hash": {

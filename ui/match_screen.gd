@@ -38,7 +38,11 @@ var _dim: ColorRect
 var _dim_a := 0.0
 var _ended := false
 var _bgm_danger := false
+var _bgm_danger_candidate := false
+var _bgm_danger_ticks := 0
 var _online_timeline = null
+
+const BGM_DANGER_STABLE_TICKS := 24
 
 
 func _ready() -> void:
@@ -144,6 +148,10 @@ func _online_physics_frame() -> void:
 		_handle_event(event)
 	for hash_pair in result["hashes"]:
 		OnlineSession.send_hash(int(hash_pair[0]), int(hash_pair[1]))
+	# 원격 입력이 끊겨 월드가 전진하지 않았다면 같은 HUD/음악 상태를 다시
+	# 동기화하지 않는다. FX 자체 애니메이션은 계속 렌더된다.
+	if not bool(result["stepped"]) and int(result["corrected_ticks"]) == 0:
+		return
 	_sync_bgm_intensity()
 	_sync_views()
 	# 예측 중 나온 승패는 상대 입력으로 뒤집힐 수 있으므로 확정 뒤에만 표시한다.
@@ -185,8 +193,20 @@ func _sync_bgm_intensity() -> void:
 			or int(world.s["wins"][1]) >= int(world.opts["wins_needed"]) - 1
 	var last_seconds: bool = int(world.s["timer"]) <= 10 * SimC.TPS
 	var danger: bool = low_hp or match_point or last_seconds
-	if danger != _bgm_danger:
+	if danger == _bgm_danger:
+		_bgm_danger_candidate = danger
+		_bgm_danger_ticks = 0
+		return
+	if danger != _bgm_danger_candidate:
+		_bgm_danger_candidate = danger
+		_bgm_danger_ticks = 1
+	else:
+		_bgm_danger_ticks += 1
+	# 온라인 롤백이나 라운드 경계에서 한두 프레임 상태가 되돌아가도
+	# 전투/위기 트랙을 계속 재시작하지 않도록 0.4초 안정 후 전환한다.
+	if _bgm_danger_ticks >= BGM_DANGER_STABLE_TICKS:
 		_bgm_danger = danger
+		_bgm_danger_ticks = 0
 		AudioManager.play_bgm("danger" if danger else "battle")
 
 
@@ -333,6 +353,8 @@ func _handle_event(e: Dictionary) -> void:
 			AudioManager.play("nerve")
 		"nerve_cancel":
 			AudioManager.play("nerve", 1.3)
+		"energy_empty":
+			AudioManager.play("ui_move", 0.72, 0.45)
 		"fight_start":
 			AudioManager.play("round")
 			hud.banner("베어라!", "", 0.8, UiKit.SEAL)

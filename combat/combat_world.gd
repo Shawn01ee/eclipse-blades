@@ -55,6 +55,8 @@ func _new_fighter(i: int) -> Dictionary:
 		"facing": -side,
 		"hp": chars[i]["hp"],
 		"nerve": 0,
+		"energy": SimC.ENERGY_MAX,
+		"energy_regen": 0,
 		"state": SimC.ST_IDLE,
 		"st_f": 0,
 		"move": "",
@@ -145,6 +147,7 @@ func step(in1: int, in2: int) -> Array:
 
 	# 4) 상태 프레임 진행 + 5) 행동 선택
 	_advance_states(frozen)
+	_recover_energy(frozen)
 	for i in 2:
 		if not frozen[i]:
 			_select_action(i)
@@ -348,6 +351,25 @@ func _move_of_id(i: int, slot: String) -> Dictionary:
 	return chars[i]["moves"][slot]
 
 
+## 공격 중에는 멈추고, 중립·이동·방어·피격 중에는 천천히 기력을 회복한다.
+func _recover_energy(frozen: Array) -> void:
+	for i in 2:
+		if frozen[i]:
+			continue
+		var p: Dictionary = s["p"][i]
+		if int(p["energy"]) >= SimC.ENERGY_MAX:
+			p["energy"] = SimC.ENERGY_MAX
+			p["energy_regen"] = 0
+			continue
+		if p["state"] in [SimC.ST_ATTACK, SimC.ST_AIR_ATTACK, SimC.ST_GRABBING]:
+			p["energy_regen"] = 0
+			continue
+		p["energy_regen"] += 1
+		if int(p["energy_regen"]) >= SimC.ENERGY_REGEN_TICKS:
+			p["energy"] += 1
+			p["energy_regen"] = 0
+
+
 # ---------------------------------------------------------------- 행동 선택
 
 func _select_action(i: int) -> void:
@@ -446,18 +468,23 @@ func _select_action(i: int) -> void:
 				motion_key = String(pair[1])
 				break
 		if motion_btn != 0:
+			var nerve_move: Dictionary = chars[i]["moves"].get("motion_nerve", {})
 			var nerve_art: bool = motion_key == "motion_heavy" \
-					and int(p["nerve"]) >= SimC.NERVE_MAX
+					and int(p["nerve"]) >= SimC.NERVE_MAX \
+					and int(p["energy"]) >= int(nerve_move.get("energy_cost", 0))
 			if nerve_art:
 				motion_key = "motion_nerve"
 			var motion_move: Dictionary = chars[i]["moves"].get(motion_key, {})
 			if not motion_move.is_empty():
 				_consume(p, motion_btn)
-				if nerve_art:
+				var started: bool = _start_move(i, motion_move)
+				if started and nerve_art:
 					p["nerve"] -= 1
-				_start_move(i, motion_move)
-				if nerve_art:
+				if started and nerve_art:
 					_ev({"t": "nerve_art", "p": i, "x": p["x"], "y": 90 * SimC.FP})
+				if not started:
+					var base_slot: String = Registry.EXTRA_SLOT_KIND.get(motion_key, "light")
+					_start_move(i, chars[i]["moves"].get(base_slot, {}))
 				return
 
 	# 잡기: 전방 유지 + 중베기 + 근접
@@ -465,7 +492,8 @@ func _select_action(i: int) -> void:
 	if not grab.is_empty() and _fwd_held(i) and _press_valid(p, SimC.B_M) \
 			and absi(p["x"] - o["x"]) <= grab["grab_range"]:
 		_consume(p, SimC.B_M)
-		_start_move(i, grab)
+		if not _start_move(i, grab):
+			_start_move(i, chars[i]["moves"].get("medium", {}))
 		return
 
 	# 일반기: 가장 최근에 누른 버튼 (동시엔 강 > 중 > 약 > 기술)
@@ -483,7 +511,8 @@ func _select_action(i: int) -> void:
 		var m: Dictionary = chars[i]["moves"].get(slot, {})
 		if not m.is_empty():
 			_consume(p, best_btn)
-			_start_move(i, m)
+			if not _start_move(i, m) and slot == "tech":
+				_start_move(i, chars[i]["moves"].get("light", {}))
 			return
 
 	# 이동 자세
@@ -507,13 +536,22 @@ func _conn_matches(conn: int, on: Array) -> bool:
 	return false
 
 
-func _start_move(i: int, mv: Dictionary) -> void:
+func _start_move(i: int, mv: Dictionary) -> bool:
+	if mv.is_empty():
+		return false
 	var p: Dictionary = s["p"][i]
+	var cost: int = int(mv.get("energy_cost", 0))
+	if int(p["energy"]) < cost:
+		_ev({"t": "energy_empty", "p": i, "need": cost, "energy": p["energy"]})
+		return false
+	p["energy"] -= cost
+	p["energy_regen"] = 0
 	p["state"] = SimC.ST_ATTACK
 	p["st_f"] = 1
 	p["move"] = mv["id"]
 	p["move_conn"] = 0
 	_ev({"t": "move_start", "p": i, "kind": mv["slot"], "id": mv["id"]})
+	return true
 
 
 # ---------------------------------------------------------------- 이동
@@ -1008,7 +1046,8 @@ func canonical_array() -> Array:
 		s["round_no"], s["wins"][0], s["wins"][1], s["winner"], s["round_result"]]
 	for i in 2:
 		var p: Dictionary = s["p"][i]
-		out.append_array([p["x"], p["facing"], p["hp"], p["nerve"], p["state"], p["st_f"],
+		out.append_array([p["x"], p["facing"], p["hp"], p["nerve"], p["energy"],
+			p["energy_regen"], p["state"], p["st_f"],
 			p["move"], p["move_conn"], p["hitstop"], p["stun"], p["push_v"], p["push_d"],
 			p["cur_in"], p["prev_in"], p["bt"], p["back_age"], p["dirh_i"], p["combo"],
 			p["vx"], p["y"], p["vy"], p["jvx"], 1 if p["air_done"] else 0])
@@ -1033,6 +1072,11 @@ func debug_set_x(i: int, px: int) -> void:
 
 func debug_set_nerve(i: int, n: int) -> void:
 	s["p"][i]["nerve"] = clampi(n, 0, SimC.NERVE_MAX)
+
+
+func debug_set_energy(i: int, value: int) -> void:
+	s["p"][i]["energy"] = clampi(value, 0, SimC.ENERGY_MAX)
+	s["p"][i]["energy_regen"] = 0
 
 
 func debug_set_hp(i: int, hp: int) -> void:

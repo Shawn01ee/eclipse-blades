@@ -63,10 +63,8 @@ assert.equal(start0.seed, start1.seed);
 first.ws.send(JSON.stringify({ t: "input", k: 0, w: 17 }));
 second.ws.send(JSON.stringify({ t: "input", k: 0, w: 34 }));
 await Promise.all([
-  first.waitFor((m) => m.t === "input" && m.slot === 0 && m.k === 0 && m.w === 17, "first input on first"),
   first.waitFor((m) => m.t === "input" && m.slot === 1 && m.k === 0 && m.w === 34, "second input on first"),
   second.waitFor((m) => m.t === "input" && m.slot === 0 && m.k === 0 && m.w === 17, "first input on second"),
-  second.waitFor((m) => m.t === "input" && m.slot === 1 && m.k === 0 && m.w === 34, "second input on second"),
 ]);
 
 first.ws.close();

@@ -14,6 +14,7 @@ recovery_frames = 42
 damage = 360
 edge_damage = 360
 chip_damage = 40
+energy_cost = 60
 priority = 4
 hitstop = 18
 hitstop_edge = 18

@@ -21,3 +21,6 @@ static func run(t, _args: Dictionary) -> void:
 			"전투/위기 트랙 길이 일치로 박자 위치 유지")
 	t.ok(BGM_PATHS["menu"] != BGM_PATHS["battle"],
 			"메뉴와 전투 음악 자산 분리")
+	var source := FileAccess.get_file_as_string("res://autoload/audio_manager.gd")
+	t.ok(source.contains("if _bgm_streams.has(mode):"),
+			"전투 중 BGM을 다시 읽거나 복제하지 않도록 캐시 사용")

@@ -13,6 +13,7 @@ active_frames = 6
 recovery_frames = 25
 damage = 190
 chip_damage = 19
+energy_cost = 50
 priority = 3
 hitstop = 11
 hitstop_edge = 15

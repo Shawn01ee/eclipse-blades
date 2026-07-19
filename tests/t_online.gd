@@ -49,24 +49,28 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(not session.has_inputs(7), "소비한 틱 입력은 큐에서 제거")
 	session.free()
 
-	# 상대 입력이 4틱 늦게 와도 로컬은 즉시 진행하고, 도착 뒤 권위 상태로 복원한다.
+	# 상대 입력이 4틱 늦게 와도 로컬은 매 프레임 진행하고, 도착 뒤 권위 상태로 복원한다.
 	var predicted_world := H.mk(0, 1, 31)
 	var authoritative := H.mk(0, 1, 31)
 	var timeline = Rollback.new(predicted_world, 0)
 	var channel := FakeChannel.new(0)
 	var p1_words: Array = []
 	var p2_words: Array = []
+	var captured_p1: Array = []
+	var captured_p2: Array = []
 	for tick in 180:
 		var p1 := SimC.B_RIGHT if tick < 35 else (SimC.B_L if tick in [48, 92] else 0)
 		var p2 := SimC.B_LEFT if tick < 45 else (SimC.B_H if tick in [52, 104] else 0)
-		p1_words.append(p1)
-		p2_words.append(p2)
-		authoritative.step(p1, p2)
+		captured_p1.append(p1)
+		captured_p2.append(p2)
+		p1_words.append(0 if tick < Rollback.INPUT_DELAY else captured_p1[tick - Rollback.INPUT_DELAY])
+		p2_words.append(0 if tick < Rollback.INPUT_DELAY else captured_p2[tick - Rollback.INPUT_DELAY])
+		authoritative.step(p1_words[tick], p2_words[tick])
 	var corrected := 0
 	for frame in 180:
 		if frame >= 4:
 			channel.inputs[1][frame - 4] = p2_words[frame - 4]
-		var result: Dictionary = timeline.frame(p1_words[frame], channel)
+		var result: Dictionary = timeline.frame(captured_p1[frame], channel)
 		corrected += int(result["corrected_ticks"])
 	for tick in range(176, 180):
 		channel.inputs[1][tick] = p2_words[tick]
@@ -77,7 +81,7 @@ static func run(t, _args: Dictionary) -> void:
 	t.eq(predicted_world.state_hash(), authoritative.state_hash(),
 			"모든 입력 도착 뒤 권위 시뮬 상태와 해시 일치")
 
-	# 연결이 멎으면 8틱까지만 예측하고 이후에는 같은 로컬 입력 틱을 보존한다.
+	# 연결이 멎으면 8틱까지만 예측하고 이후에는 미리 보낸 입력 틱을 보존한다.
 	var capped_world := H.mk(0, 1, 41)
 	var capped := Rollback.new(capped_world, 0)
 	var silent := FakeChannel.new(0)
@@ -85,5 +89,15 @@ static func run(t, _args: Dictionary) -> void:
 		var word := SimC.B_L if frame == 8 else 0
 		capped.frame(word, silent)
 	t.eq(capped.current_tick, Rollback.MAX_PREDICTION, "원격 단절 시 최대 8틱 뒤 안전 정지")
-	t.eq(silent.get_input(0, Rollback.MAX_PREDICTION, -1), SimC.B_L,
+	t.eq(silent.get_input(0, Rollback.MAX_PREDICTION + Rollback.INPUT_DELAY, -1), SimC.B_L,
 			"정지 중 같은 틱 로컬 입력을 덮어쓰지 않음")
+
+	# 첫 프레임에 중립 2틱과 현재 입력을 미래 틱으로 연속 전송한다.
+	var delayed_world := H.mk(0, 1, 51)
+	var delayed := Rollback.new(delayed_world, 0)
+	var delayed_channel := FakeChannel.new(0)
+	delayed.frame(SimC.B_H, delayed_channel)
+	t.eq(delayed_channel.get_input(0, 0, -1), 0, "입력 지연 첫 틱은 중립")
+	t.eq(delayed_channel.get_input(0, 1, -1), 0, "입력 지연 둘째 틱도 중립")
+	t.eq(delayed_channel.get_input(0, Rollback.INPUT_DELAY, -1), SimC.B_H,
+			"현재 조작은 2틱 앞서 전송")
