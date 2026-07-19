@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_tech"
-display_name = "야차 돌아베기"
+display_name = "야차 돌아치기"
 input_command = "T"
 role_note = "물러나 흘린 뒤 다시 파고들기"
 startup_frames = 10

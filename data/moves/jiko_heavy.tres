@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_heavy"
-display_name = "야차 돌진베기"
+display_name = "야차 돌진치기"
 input_command = "H"
 role_note = "연계 끝을 맺는 세 번째 돌진"
 startup_frames = 15

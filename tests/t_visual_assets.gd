@@ -4,6 +4,10 @@ extends RefCounted
 
 static func run(t, _args: Dictionary) -> void:
 	t.suite("전투 포즈 아틀라스")
+	var jiko_portrait := Image.load_from_file(
+			ProjectSettings.globalize_path("res://art/portraits/Jiko.png"))
+	t.ok(jiko_portrait != null and jiko_portrait.get_width() >= 1000 \
+			and jiko_portrait.get_height() >= 1000, "지코 선택 화면 일러스트 로드")
 	for fighter_id in ["arin", "daeru", "han", "myo"]:
 		var path := ProjectSettings.globalize_path("res://art/combat_atlas/%s.png" % fighter_id)
 		var img := Image.load_from_file(path)

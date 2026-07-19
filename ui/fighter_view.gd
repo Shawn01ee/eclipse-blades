@@ -27,7 +27,7 @@ var combat_atlas: Texture2D = null # 실제 자세가 다른 4×2 전투 키 포
 var sheet_meta := {}               # cell_w, cell_h, foot_y, anims
 var strips := {}                   # anim → Texture2D (가로 스트립)
 var has_sheets := false
-var weapon_kind := "sword"         # sword / polescythe / daggers / chain
+var weapon_kind := "sword"         # sword / shinai / polescythe / daggers / chain
 
 var _st := SimC.ST_IDLE
 var _prev_st := -1
@@ -59,7 +59,7 @@ func setup(w: CombatWorld, i: int, fd_color: Color, char_id: String) -> void:
 	light_body = fd_color.v > 0.5
 	weapon_len = {"daeru": 140.0, "mujin": 118.0, "jiko": 108.0}.get(char_id, 95.0)
 	weapon_kind = {"arin": "sword", "daeru": "polescythe", "han": "daggers",
-			"myo": "chain", "mujin": "sword", "jiko": "sword"}.get(char_id, "sword")
+			"myo": "chain", "mujin": "sword", "jiko": "shinai"}.get(char_id, "sword")
 	# 현재 아트 방향은 스킨 없는 관절형 수묵 실루엣. 꺼진 스킨·시트는 모바일 메모리에도 싣지 않는다.
 	if COMBAT_SKINS_ENABLED:
 		sprite_tex = _load_tex("res://art/sprites/%s.png" % char_id)
@@ -306,6 +306,8 @@ func _draw_contact_weapon() -> void:
 	match weapon_kind:
 		"sword":
 			_wp_blade(grip, tip, 5.5, edge_col, true)
+		"shinai":
+			_wp_shinai(grip, tip, edge_col, true)
 		"daggers":
 			_wp_daggers(grip, tip, edge_col, true)
 		"polescythe":
@@ -314,7 +316,10 @@ func _draw_contact_weapon() -> void:
 			_wp_chain(grip, tip, edge_col, true)
 		_:
 			_wp_blade(grip, tip, 5.5, edge_col, true)
-	_draw_tip_glint(tip, fx, 0.96)
+	if weapon_kind == "shinai":
+		draw_arc(tip, 7.0, 0.0, TAU, 16, Color(UiKit.SEAL, 0.72), 2.0, true)
+	else:
+		_draw_tip_glint(tip, fx, 0.96)
 
 
 func _draw_atlas_active_trail() -> void:
@@ -599,6 +604,7 @@ func _draw_rig_weapon(grip: Vector2, tip: Vector2, active: bool) -> void:
 		draw_polygon(sweep, [Color(UiKit.INK, 0.13)])
 	match weapon_kind:
 		"sword": _wp_blade(grip, tip, 4.5, edge_col, active)
+		"shinai": _wp_shinai(grip, tip, edge_col, active)
 		"daggers": _wp_daggers(grip, tip, edge_col, active)
 		"polescythe": _wp_polescythe(grip, tip, edge_col, active)
 		"chain": _wp_chain(grip, tip, edge_col, active)
@@ -755,6 +761,7 @@ func _draw_strike(hh: float, hw: float) -> void:
 	var edge_col := UiKit.SEAL if active else UiKit.INK   # 활성 중 칼끝에 핏빛
 	match weapon_kind:
 		"sword": _wp_blade(grip, tip, 4.5, edge_col, active)
+		"shinai": _wp_shinai(grip, tip, edge_col, active)
 		"daggers": _wp_daggers(grip, tip, edge_col, active)
 		"polescythe": _wp_polescythe(grip, tip, edge_col, active)
 		"chain": _wp_chain(grip, tip, edge_col, active)
@@ -762,7 +769,10 @@ func _draw_strike(hh: float, hw: float) -> void:
 
 	# 활성 순간 칼끝 번쩍임
 	if active:
-		_draw_tip_glint(tip, fx, 0.82)
+		if weapon_kind == "shinai":
+			draw_arc(tip, 7.0, 0.0, TAU, 16, Color(UiKit.SEAL, 0.66), 2.0, true)
+		else:
+			_draw_tip_glint(tip, fx, 0.82)
 
 
 func _ease(t: float) -> float:
@@ -812,6 +822,44 @@ func _wp_blade(grip: Vector2, tip: Vector2, w: float, edge_col: Color, active: b
 	var guard_c := grip + dir * 4.0
 	draw_line(guard_c - perp * (w + 4.0), guard_c + perp * (w + 4.0), UiKit.INK, 3.2, true)
 	draw_circle(handle_end, 2.6, UiKit.INK)
+
+
+func _wp_shinai(grip: Vector2, tip: Vector2, edge_col: Color, active: bool) -> void:
+	var axis := tip - grip
+	if axis.length() < 18.0:
+		return
+	var dir := axis.normalized()
+	var perp := Vector2(-dir.y, dir.x)
+	var handle_end := grip - dir * 17.0
+	var guard_c := grip + dir * 5.0
+	var bamboo_start := guard_c + dir * 3.0
+	var bamboo_end := tip - dir * 4.0
+
+	# 가죽 손잡이와 둥근 코등이. 날이 아니라 손에 쥔 타격 무기로 읽히게 분리한다.
+	draw_line(handle_end, guard_c, UiKit.INK, 10.0, true)
+	draw_line(handle_end + dir * 2.0, guard_c - dir * 2.0, Color(0.25, 0.17, 0.10), 6.0, true)
+	for u in [0.22, 0.47, 0.72]:
+		var wrap_c := handle_end.lerp(guard_c, u)
+		draw_line(wrap_c - perp * 4.0, wrap_c + perp * 4.0, Color(0.72, 0.58, 0.31), 1.4, true)
+	draw_circle(guard_c, 8.0, UiKit.INK)
+	draw_circle(guard_c, 5.2, Color(0.56, 0.39, 0.16))
+
+	# 네 겹 대나무 살과 결속끈, 둥근 가죽 선혁을 표현한다.
+	draw_line(bamboo_start, bamboo_end, UiKit.INK, 11.0, true)
+	var bamboo_dark := Color(0.57, 0.42, 0.19)
+	var bamboo_light := Color(0.83, 0.69, 0.38)
+	for lane in [-3.0, -1.0, 1.0, 3.0]:
+		var lane_col := bamboo_light if lane < 1.0 else bamboo_dark
+		draw_line(bamboo_start + perp * lane, bamboo_end + perp * lane, lane_col, 2.2, true)
+	for u in [0.28, 0.56, 0.82]:
+		var tie_c := bamboo_start.lerp(bamboo_end, u)
+		draw_line(tie_c - perp * 6.0, tie_c + perp * 6.0, UiKit.INK, 2.5, true)
+	draw_circle(tip - dir * 2.5, 5.8, UiKit.INK)
+	draw_circle(tip - dir * 2.5, 3.2, Color(0.72, 0.60, 0.36))
+	if active:
+		var impact_start := bamboo_start.lerp(bamboo_end, 0.68)
+		draw_line(impact_start + perp * 5.3, bamboo_end + perp * 5.3,
+				Color(edge_col, 0.78), 1.8, true)
 
 
 func _wp_daggers(grip: Vector2, tip: Vector2, edge_col: Color, active: bool) -> void:

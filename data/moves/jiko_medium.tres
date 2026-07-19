@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_medium"
-display_name = "야차 연속베기"
+display_name = "야차 연속치기"
 input_command = "M"
 role_note = "강·기술로 잇는 두 번째 압박"
 startup_frames = 8

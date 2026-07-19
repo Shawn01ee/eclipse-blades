@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_light"
-display_name = "야차 빠른베기"
+display_name = "야차 빠른치기"
 input_command = "L"
 startup_frames = 5
 active_frames = 2

@@ -8,6 +8,7 @@ const CARD_GAP := Vector2(12, 14)
 const LEFT_DETAIL_RECT := Rect2(28, 94, 300, 440)
 const RIGHT_DETAIL_RECT := Rect2(952, 94, 300, 440)
 const STAGE_RECT := Rect2(370, 360, 512, 174)
+const PORTRAIT_STEMS := {"jiko": "Jiko"}
 
 
 class PortraitPlate:
@@ -226,7 +227,7 @@ func _make_detail(rect: Rect2, marker_text: String, accent: Color) -> Dictionary
 	style_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(style_l)
 	return {"panel": panel, "plate": plate, "marker": marker,
-			"name": name_l, "weapon": weapon_l, "style": style_l}
+			"ready": ready, "name": name_l, "weapon": weapon_l, "style": style_l}
 
 
 func _panel_style(border: Color, width: int, background: Color) -> StyleBoxFlat:
@@ -305,8 +306,9 @@ func _portrait(id: String) -> Texture2D:
 	if _portraits.has(id):
 		return _portraits[id]
 	var tex: Texture2D = null
+	var stem: String = PORTRAIT_STEMS.get(id, id)
 	for ext in ["png", "jpg", "jpeg", "webp"]:
-		var path := "res://art/portraits/%s.%s" % [id, ext]
+		var path := "res://art/portraits/%s.%s" % [stem, ext]
 		if ResourceLoader.exists(path):
 			tex = load(path)
 			break
@@ -321,7 +323,10 @@ func _portrait(id: String) -> Texture2D:
 
 
 func _refresh_detail(detail: Dictionary, fd: FighterData) -> void:
-	detail["plate"].set_fighter(fd, _portrait(fd.id))
+	var portrait := _portrait(fd.id)
+	detail["plate"].set_fighter(fd, portrait)
+	detail["ready"].text = "OFFICIAL ILLUSTRATION" if portrait != null \
+			else "ILLUSTRATION / 교체 예정"
 	detail["name"].text = "%s  %s" % [fd.display_name, fd.id.to_upper()]
 	detail["weapon"].text = "%s · HP %d" % [fd.weapon_name, fd.max_hp]
 	detail["style"].text = fd.style_note

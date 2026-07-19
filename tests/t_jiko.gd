@@ -8,6 +8,13 @@ static func run(t, _args: Dictionary) -> void:
 	t.suite("지코 야차 연계")
 	var fds := Registry.load_all()
 	t.eq(fds[5].id, "jiko", "6번째 파이터 지코 등록")
+	t.eq(fds[5].weapon_name, "죽도", "지코 무기는 죽도로 표시")
+	t.ok(fds[5].moves["light"].display_name.contains("치기") \
+			and fds[5].moves["heavy"].display_name.contains("치기"),
+			"죽도 공격은 베기가 아닌 치기로 구분")
+	var view_source := FileAccess.get_file_as_string("res://ui/fighter_view.gd")
+	t.ok(view_source.contains('"jiko": "shinai"') and view_source.contains("func _wp_shinai"),
+			"지코 전투 모델에 전용 죽도 렌더러 연결")
 	var w := H.mk(5, 0, 607)
 	w.debug_set_x(0, 0)
 	w.debug_set_x(1, 112)

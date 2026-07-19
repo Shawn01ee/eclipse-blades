@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_air"
-display_name = "공중 야차베기"
+display_name = "공중 야차치기"
 input_command = "공중 공격"
 startup_frames = 6
 active_frames = 8

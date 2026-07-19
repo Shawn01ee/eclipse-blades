@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1784463486|1560315';
+const CACHE_VERSION = '1784465226|1422822';
 /** @type {string} */
 const CACHE_PREFIX = '일식검담 ECLIPSE BLA-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
