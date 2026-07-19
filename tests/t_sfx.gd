@@ -1,5 +1,5 @@
 extends RefCounted
-## 5인 무기별 휘두름 효과음 자산과 이벤트 등록 검증.
+## 6인 무기별 휘두름 효과음 자산과 이벤트 등록 검증.
 
 const SWING_PATHS := {
 	"arin": "res://fx/audio/swing_arin.wav",
@@ -7,6 +7,7 @@ const SWING_PATHS := {
 	"han": "res://fx/audio/swing_han.wav",
 	"myo": "res://fx/audio/swing_myo.wav",
 	"mujin": "res://fx/audio/swing_mujin.wav",
+	"jiko": "res://fx/audio/swing_jiko.wav",
 }
 
 
@@ -22,4 +23,4 @@ static func run(t, _args: Dictionary) -> void:
 	var registered: bool = source != ""
 	for fighter_id in SWING_PATHS:
 		registered = registered and source.contains('"swing_%s": "%s"' % [fighter_id, SWING_PATHS[fighter_id]])
-	t.ok(registered, "5인 휘두름 이벤트가 오디오 풀에 등록됨")
+	t.ok(registered, "6인 휘두름 이벤트가 오디오 풀에 등록됨")

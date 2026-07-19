@@ -57,9 +57,9 @@ func setup(w: CombatWorld, i: int, fd_color: Color, char_id: String) -> void:
 	body_col = fd_color
 	fighter_id = char_id
 	light_body = fd_color.v > 0.5
-	weapon_len = {"daeru": 140.0, "mujin": 118.0}.get(char_id, 95.0)
+	weapon_len = {"daeru": 140.0, "mujin": 118.0, "jiko": 108.0}.get(char_id, 95.0)
 	weapon_kind = {"arin": "sword", "daeru": "polescythe", "han": "daggers",
-			"myo": "chain", "mujin": "sword"}.get(char_id, "sword")
+			"myo": "chain", "mujin": "sword", "jiko": "sword"}.get(char_id, "sword")
 	# 현재 아트 방향은 스킨 없는 관절형 수묵 실루엣. 꺼진 스킨·시트는 모바일 메모리에도 싣지 않는다.
 	if COMBAT_SKINS_ENABLED:
 		sprite_tex = _load_tex("res://art/sprites/%s.png" % char_id)
@@ -342,7 +342,7 @@ func _draw_atlas_active_trail() -> void:
 
 func _draw_rig(hh: float, hw: float) -> void:
 	var pose := _rig_pose(hh, hw)
-	var bulk := 1.18 if fighter_id == "mujin" else 1.0
+	var bulk := 1.18 if fighter_id == "mujin" else (1.08 if fighter_id == "jiko" else 1.0)
 	var main := body_col.lerp(UiKit.INK, 0.30 if light_body else 0.08)
 	var shade := main.lerp(UiKit.INK, 0.42)
 	var cloth := main.lerp(UiKit.PAPER_LIGHT, 0.16)
@@ -390,6 +390,15 @@ func _draw_rig(hh: float, hw: float) -> void:
 		])
 		draw_polyline(tail, UiKit.INK, 11.0, true)
 		draw_polyline(tail, shade, 5.5, true)
+	elif fighter_id == "jiko":
+		# 낮게 갈라진 머리끈으로 야차풍의 날 선 역삼각 실루엣을 만든다.
+		for side in [-1.0, 1.0]:
+			var lock := PackedVector2Array([
+				pose["head"] + Vector2(-5, -15),
+				pose["head"] + Vector2(-24, -22 + side * 3),
+				pose["head"] + Vector2(-34, -7 + side * 13),
+			])
+			draw_polyline(lock, UiKit.INK, 5.0, true)
 
 	# 뒤팔 → 무기 → 앞팔 순서. 손과 무기 손잡이는 같은 좌표를 공유한다.
 	_draw_limb(pose["shoulder_back"], pose["elbow_back"], 10.0 * bulk, shade)

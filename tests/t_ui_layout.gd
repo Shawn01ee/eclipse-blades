@@ -17,6 +17,13 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(menu_source.contains("var utility := HBoxContainer.new()") \
 			and menu_source.contains("UTILITY_BUTTON_SIZE := Vector2(304, 46)"),
 			"설정·종료를 별도 하단 보조 메뉴로 분리")
+	var select_file := FileAccess.open("res://ui/char_select.gd", FileAccess.READ)
+	var select_source := select_file.get_as_text() if select_file != null else ""
+	t.ok(select_source.contains("const GRID_COLUMNS := 3") \
+			and select_source.contains("LEFT_DETAIL_RECT") \
+			and select_source.contains("RIGHT_DETAIL_RECT") \
+			and select_source.contains("STAGE_RECT"),
+			"선택 화면을 좌우 상세·중앙 3×2 로스터·스테이지 영역으로 분리")
 	var hud_file := FileAccess.open("res://ui/hud.gd", FileAccess.READ)
 	var hud_source := hud_file.get_as_text() if hud_file != null else ""
 	t.ok(hud_source.contains("const ENERGY_BAR_Y := 72.0") \

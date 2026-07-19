@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "jiko_heavy"
+display_name = "야차 돌진베기"
+input_command = "H"
+role_note = "연계 끝을 맺는 세 번째 돌진"
+startup_frames = 15
+active_frames = 4
+recovery_frames = 29
+damage = 225
+chip_damage = 22
+priority = 3
+hitstop = 13
+hitstop_edge = 16
+hitstun = 31
+blockstun = 19
+pushback_hit = 48
+pushback_block = 38
+hitboxes_by_frame = [[16, 19, 30, 82, 112, 44]]
+motion_frames = [[1, 6, -1600], [7, 15, 7300]]
+sound_event = "hit_h"
+camera_event = "shake_m"

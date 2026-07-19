@@ -1,0 +1,34 @@
+[gd_resource type="Resource" load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://combat/fighter_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/moves/jiko_light.tres" id="2"]
+[ext_resource type="Resource" path="res://data/moves/jiko_medium.tres" id="3"]
+[ext_resource type="Resource" path="res://data/moves/jiko_heavy.tres" id="4"]
+[ext_resource type="Resource" path="res://data/moves/jiko_tech.tres" id="5"]
+[ext_resource type="Resource" path="res://data/moves/jiko_grab.tres" id="6"]
+[ext_resource type="Resource" path="res://data/moves/jiko_super.tres" id="7"]
+[ext_resource type="Resource" path="res://data/moves/jiko_air.tres" id="8"]
+
+[resource]
+script = ExtResource("1")
+id = "jiko"
+display_name = "지코"
+weapon_name = "야차도"
+style_note = "세 번 파고드는 야차 연계, 물러나 되치는 압박"
+color = Color(0.30, 0.08, 0.12, 1)
+max_hp = 1020
+walk_f = 4550
+walk_b = 3950
+pushbox_hw = 34
+hurtbox_hw = 40
+hurtbox_h = 176
+edge_ratio_pct = 24
+moves = {
+"light": ExtResource("2"),
+"medium": ExtResource("3"),
+"heavy": ExtResource("4"),
+"tech": ExtResource("5"),
+"grab": ExtResource("6"),
+"super": ExtResource("7"),
+"air": ExtResource("8")
+}

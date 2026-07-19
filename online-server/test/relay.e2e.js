@@ -4,7 +4,7 @@ const base = process.argv[2] ?? process.env.RELAY_TEST_URL ?? "ws://127.0.0.1:87
 const room = "TEST2Z";
 
 function connectClient() {
-  const ws = new WebSocket(`${base}/room/${room}?v=1`);
+  const ws = new WebSocket(`${base}/room/${room}?v=2`);
   const messages = [];
   const waiters = [];
   ws.addEventListener("message", (event) => {

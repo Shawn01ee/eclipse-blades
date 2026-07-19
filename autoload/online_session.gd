@@ -9,7 +9,7 @@ signal peer_left
 signal network_error(message: String)
 signal desync_detected(tick: int)
 
-const PROTOCOL := 1
+const PROTOCOL := 2
 const INPUT_MASK := 1023
 const ROOM_ALPHABET := "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const DEFAULT_RELAY_URL := ""

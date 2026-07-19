@@ -1,5 +1,5 @@
 extends SceneTree
-## 개발용 5인 CPU 매치업 표. 정식 테스트와 별개로 수치 조정 때 실행한다.
+## 개발용 6인 CPU 매치업 표. 정식 테스트와 별개로 수치 조정 때 실행한다.
 ## godot --headless --path . --script res://tests/run_balance.gd
 
 const ROUNDS_PER_SIDE := 16
@@ -38,7 +38,7 @@ func _initialize() -> void:
 					elif w.s["winner"] == 1:
 						wins[fds[right].id] += 1
 						pair_wins[pair_key][0 if right == a else 1] += 1
-	print("=== 5인 CPU 밸런스 표 (각 대진 좌우 %d경기) ===" % ROUNDS_PER_SIDE)
+	print("=== 6인 CPU 밸런스 표 (각 대진 좌우 %d경기) ===" % ROUNDS_PER_SIDE)
 	for fd in fds:
 		var rate := 100.0 * float(wins[fd.id]) / maxf(float(games[fd.id]), 1.0)
 		print("%s(%s): %d/%d = %.1f%%" % [fd.display_name, fd.id, wins[fd.id], games[fd.id], rate])

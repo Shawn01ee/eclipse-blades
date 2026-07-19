@@ -7,7 +7,7 @@ const H := preload("res://tests/t_help.gd")
 static func run(t, _args: Dictionary) -> void:
 	t.suite("무진 로스터/기술")
 	var fds := Registry.load_all()
-	t.eq(fds.size(), 5, "로스터 5명")
+	t.eq(fds.size(), 6, "로스터 6명")
 	t.eq(fds[4].id, "mujin", "5번째 파이터 무진 등록")
 	var w := H.mk(4, 0, 77)
 	t.eq(w.chars[0]["moves"].size(), 11, "무진 기본 7개 + 파도 연계 4개")

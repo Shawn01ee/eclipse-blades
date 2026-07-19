@@ -120,6 +120,29 @@ def mujin_voice():
     return dur, voice
 
 
+def jiko_voice():
+    """짧게 세 번 갈라지는 단도성 장검 풍압."""
+    noise_a = filtered_noise(4607, 0.30, 0.050)
+    noise_b = filtered_noise(4608, 0.25, 0.040)
+    dur = 0.34
+
+    def pulse(t, at, width):
+        return math.exp(-((t - at) / width) ** 2)
+
+    def voice(t):
+        band_a, _ = noise_a()
+        band_b, low = noise_b()
+        cuts = (
+            band_a * pulse(t, 0.062, 0.043)
+            + band_b * pulse(t, 0.132, 0.052)
+            + (band_a - band_b) * pulse(t, 0.218, 0.066)
+        )
+        bite = bell(t, 0.046, 1540.0, 27.0) + bell(t, 0.184, 2020.0, 30.0)
+        return cuts * 1.18 + bite * 0.075 + low * swell(t, dur, 0.62, 0.30) * 0.72
+
+    return dur, voice
+
+
 def write(name, duration, voice):
     samples = [voice(i / SR) for i in range(int(duration * SR))]
     peak = max((abs(v) for v in samples), default=1.0) or 1.0
@@ -144,6 +167,7 @@ if __name__ == "__main__":
         ("swing_han", han_voice),
         ("swing_myo", myo_voice),
         ("swing_mujin", mujin_voice),
+        ("swing_jiko", jiko_voice),
     ):
         dur, fn = factory()
         write(sound_name, dur, fn)
