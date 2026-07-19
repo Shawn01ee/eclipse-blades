@@ -106,11 +106,16 @@ func _input(event: InputEvent) -> void:
 			_on_up(event.index)
 	elif event is InputEventScreenDrag:
 		if event.index == _joy_index:
-			_joy_vec = event.position - joy_center
+			_joy_vec = _local_touch_position(event.position) - joy_center
 			_apply_joy()
 
 
+func _local_touch_position(viewport_position: Vector2) -> Vector2:
+	return get_global_transform_with_canvas().affine_inverse() * viewport_position
+
+
 func _on_down(index: int, pos: Vector2) -> void:
+	pos = _local_touch_position(pos)
 	if pause_rect.has_point(pos):
 		_pause_index = index
 		return

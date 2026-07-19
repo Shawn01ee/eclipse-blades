@@ -3,6 +3,7 @@ extends RefCounted
 
 const MobileGuard := preload("res://ui/mobile_guard.gd")
 const TouchControls := preload("res://ui/touch_controls.gd")
+const Responsive := preload("res://ui/responsive_layout.gd")
 
 
 static func run(t, _args: Dictionary) -> void:
@@ -18,6 +19,19 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(load("res://fonts/NotoSansKR-Game.ttf") is Font, "웹 한글 폰트 리소스 로드")
 	t.eq(ProjectSettings.get_setting("display/window/handheld/orientation"), "landscape",
 			"모바일 가로 방향 선언")
+	t.eq(ProjectSettings.get_setting("display/window/stretch/aspect"), "expand",
+			"기기 비율에 맞춰 논리 시야 확장")
+	t.eq(Responsive.content_offset_for_size(Vector2(1558, 720)), Vector2(139, 0),
+			"긴 모바일 화면에서 1280 콘텐츠 중앙 정렬")
+	t.eq(Responsive.content_offset_for_size(Vector2(1280, 720)), Vector2.ZERO,
+			"16:9 화면에서 기준 콘텐츠 위치 유지")
+	t.eq(Responsive.content_offset_for_size(Vector2(1280, 960)), Vector2(0, 120),
+			"4:3 화면에서 기준 콘텐츠 세로 중앙 정렬")
+	t.eq(Responsive.expanded_rect_for_size(Vector2(1558, 720)),
+			Rect2(-139, 0, 1558, 720), "긴 모바일 화면 전체를 덮는 배경 영역")
+	var wide_source := Responsive.cover_source_rect(Vector2(1672, 941), Vector2(1558, 720))
+	t.ok(absf(wide_source.size.x / wide_source.size.y - 1558.0 / 720.0) < 0.001,
+			"메뉴 키아트 비율 유지 화면 채우기")
 	t.eq(ProjectSettings.get_setting("input_devices/pointing/emulate_mouse_from_touch"), false,
 			"모바일 터치가 호환 마우스를 거쳐 중복 입력되지 않음")
 
@@ -57,6 +71,15 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(select_source.contains("card.gui_input.connect(_on_card_input.bind(k))") \
 			and select_source.contains("touch_bar.visible = step == 2"),
 			"캐릭터 카드·난이도·시작 터치 경로 연결")
+	var touch_file := FileAccess.open("res://ui/touch_controls.gd", FileAccess.READ)
+	var touch_source := touch_file.get_as_text() if touch_file != null else ""
+	t.ok(touch_source.contains("get_global_transform_with_canvas().affine_inverse()") \
+			and touch_source.contains("_local_touch_position(event.position)"),
+			"확장 화면의 전역 터치를 컨트롤 로컬 좌표로 보정")
+	var stage_file := FileAccess.open("res://ui/stage_view.gd", FileAccess.READ)
+	var stage_source := stage_file.get_as_text() if stage_file != null else ""
+	t.ok(stage_source.contains("get_viewport().size_changed.connect(queue_redraw)"),
+			"화면 회전·리사이즈 뒤 확장 무대 다시 그리기")
 
 	var layout := TouchControls.layout_for_size(120)
 	var joy_center: Vector2 = layout["joy_center"]

@@ -1,6 +1,8 @@
 extends Control
 ## 메인 메뉴 — 키아트(있으면) + 일식 문장 + 붓글씨 느낌 타이틀.
 
+const Responsive := preload("res://ui/responsive_layout.gd")
+
 var keyart: Texture2D = null
 
 
@@ -49,13 +51,16 @@ func _start(mode: int) -> void:
 
 
 func _draw() -> void:
+	var full_rect := Responsive.expanded_rect_for_size(get_viewport_rect().size)
 	# 화지 바탕
-	draw_rect(Rect2(0, 0, 1280, 720), UiKit.PAPER)
+	draw_rect(full_rect, UiKit.PAPER)
 	var f := ThemeDB.fallback_font
 	if keyart != null:
-		# 키아트 + 화지 와시(먹 톤 유지)
-		draw_texture_rect(keyart, Rect2(0, 0, 1280, 720), false)
-		draw_rect(Rect2(0, 0, 1280, 720), Color(UiKit.PAPER, 0.30))
+		# 화면을 꽉 채우되 원본 비율을 지키고 넘치는 쪽만 중앙 크롭한다.
+		var texture_size := Vector2(keyart.get_width(), keyart.get_height())
+		var source_rect := Responsive.cover_source_rect(texture_size, full_rect.size)
+		draw_texture_rect_region(keyart, full_rect, source_rect)
+		draw_rect(full_rect, Color(UiKit.PAPER, 0.30))
 		# 타이틀 띠
 		draw_rect(Rect2(340, 218, 600, 122), Color(UiKit.PAPER_LIGHT, 0.82))
 		draw_rect(Rect2(340, 218, 600, 3), UiKit.INK)

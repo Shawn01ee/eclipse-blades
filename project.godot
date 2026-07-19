@@ -30,7 +30,7 @@ GameState="*res://autoload/game_state.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+window/stretch/aspect="expand"
 window/handheld/orientation="landscape"
 
 [input_devices]
@@ -42,4 +42,4 @@ pointing/emulate_mouse_from_touch=false
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.07, 0.06, 0.055, 1)
+environment/defaults/default_clear_color=Color(0.847, 0.807, 0.714, 1)

@@ -2,13 +2,20 @@ extends Node2D
 ## 무대 "달그늘 나루" — 수묵 배경: 화지 하늘, 일식, 먹 산세, 마른 붓 지면.
 ## 시뮬 좌표: x=0 이 화면 640, 지면 y=620. 벽 ±540px → 화면 100/1180.
 
+const Responsive := preload("res://ui/responsive_layout.gd")
 const GROUND_Y := 620.0
 
 
+func _ready() -> void:
+	get_viewport().size_changed.connect(queue_redraw)
+
+
 func _draw() -> void:
+	var full_rect := Responsive.expanded_rect_for_size(get_viewport_rect().size)
 	# 화지
-	draw_rect(Rect2(0, 0, 1280, 720), UiKit.PAPER)
-	draw_rect(Rect2(0, 0, 1280, 240), Color(UiKit.PAPER_LIGHT, 0.5))
+	draw_rect(full_rect, UiKit.PAPER)
+	draw_rect(Rect2(full_rect.position, Vector2(full_rect.size.x, 240.0 - full_rect.position.y)),
+			Color(UiKit.PAPER_LIGHT, 0.5))
 	# 일식 (개기 직전)
 	var c := Vector2(950, 130)
 	draw_circle(c, 58, Color(UiKit.GRAY, 0.18))
@@ -23,8 +30,9 @@ func _draw() -> void:
 	for k in 5:
 		UiKit.dry_stroke(self, Vector2(80.0 + k * 40.0, 540.0 + k * 9.0), 1100.0 - k * 90.0, UiKit.INK_FAINT, 40 + k)
 	# 지면: 먹 번짐 띠
-	draw_rect(Rect2(0, GROUND_Y, 1280, 100), Color(0.30, 0.28, 0.245))
-	draw_rect(Rect2(0, GROUND_Y, 1280, 6), Color(UiKit.INK, 0.85))
+	draw_rect(Rect2(full_rect.position.x, GROUND_Y, full_rect.size.x,
+			maxf(full_rect.end.y - GROUND_Y, 100.0)), Color(0.30, 0.28, 0.245))
+	draw_rect(Rect2(full_rect.position.x, GROUND_Y, full_rect.size.x, 6), Color(UiKit.INK, 0.85))
 	for k in 12:
 		UiKit.dry_stroke(self, Vector2(20.0 + k * 105.0, GROUND_Y + 18.0 + (k % 4) * 18.0), 130.0, Color(UiKit.INK, 0.35), 60 + k)
 	# 경기장 벽 (나루 말뚝)
