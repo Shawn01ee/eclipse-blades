@@ -25,6 +25,17 @@ static func run(t, _args: Dictionary) -> void:
 	var preset := preset_file.get_as_text() if preset_file != null else ""
 	t.ok(preset.contains("variant/thread_support=false"), "iOS 호환 단일 스레드 웹 빌드")
 	t.ok(preset.contains("viewport-fit=cover"), "iPhone 노치 대응 viewport")
+	t.ok(preset.contains("requestFullscreen") \
+			and preset.contains("screen.orientation.lock('landscape')"),
+			"모바일 첫 터치에서 전체화면·가로 잠금 요청")
+	t.ok(preset.contains("'pointerdown',enterMobileMode") \
+			and preset.contains("'touchstart',enterMobileMode") \
+			and preset.contains("once:true"),
+			"포인터·터치 환경 모두 모바일 화면 전환 연결")
+	t.ok(preset.contains("progressive_web_app/enabled=true") \
+			and preset.contains("progressive_web_app/display=0") \
+			and preset.contains("progressive_web_app/orientation=1"),
+			"홈 화면 실행은 fullscreen·landscape PWA")
 	t.ok(preset.contains("art/combat_atlas/*") and preset.contains("art/sheets/*") \
 			and preset.contains("art/sprites/*"), "비활성 전투 스킨을 웹 패키지에서 제외")
 
