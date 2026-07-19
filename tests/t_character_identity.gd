@@ -12,7 +12,7 @@ static func _reach(mv: Dictionary) -> int:
 
 
 static func run(t, _args: Dictionary) -> void:
-	t.suite("5인 기술 역할·밸런스")
+	t.suite("6인 기술 역할·밸런스")
 	var fds := Registry.load_all()
 	var baked: Array = []
 	for fd in fds:
@@ -43,6 +43,15 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(baked[4]["moves"].has("motion_light") and baked[4]["moves"].has("motion_heavy") \
 			and baked[4]["moves"]["heavy"]["dmg"] > baked[1]["moves"]["heavy"]["dmg"],
 			"무진은 파도 커맨드와 로스터 최고 단발")
+	var jiko_light_cancel: Dictionary = baked[5]["moves"]["light"]["cancels"][0]
+	var jiko_medium_cancel: Dictionary = baked[5]["moves"]["medium"]["cancels"][0]
+	var jiko_tech_motion: Array = baked[5]["moves"]["tech"]["motion"]
+	t.ok(jiko_light_cancel["targets"].has("jiko_medium") \
+			and jiko_medium_cancel["targets"].has("jiko_heavy") \
+			and jiko_medium_cancel["on"].has("block"),
+			"지코는 약→중→강으로 가드 중에도 이어지는 3단 압박")
+	t.ok(int(jiko_tech_motion[0][2]) < 0 and int(jiko_tech_motion[1][2]) > 0,
+			"지코 기술은 먼저 물러난 뒤 다시 파고드는 역박자")
 
 	# 공통 밸런스 가드레일: 강공격은 즉사기가 아니며 최소 14f 이상 보고 대응 가능.
 	var guardrails := true

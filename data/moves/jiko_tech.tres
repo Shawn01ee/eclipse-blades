@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "jiko_tech"
+display_name = "야차 돌아베기"
+input_command = "T"
+role_note = "물러나 흘린 뒤 다시 파고들기"
+startup_frames = 10
+active_frames = 3
+recovery_frames = 21
+damage = 118
+chip_damage = 10
+energy_cost = 40
+priority = 2
+hitstop = 8
+hitstop_edge = 11
+hitstun = 21
+blockstun = 13
+pushback_hit = 35
+pushback_block = 26
+hitboxes_by_frame = [[11, 13, 30, 88, 104, 34]]
+motion_frames = [[1, 4, -6800], [5, 10, 11800]]
+sound_event = "hit_m"

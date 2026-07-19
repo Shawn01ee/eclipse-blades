@@ -200,6 +200,12 @@ func think(w: CombatWorld) -> int:
 			and _can_use_slot(w, me, "tech") and _roll(100) < 38:
 		return _start_action(ActionLibrary.Action.TECH, facing)
 
+	# 지코의 기술은 판정 좌표보다 먼저 물러났다 재돌진하므로 단순 히트박스 사거리로
+	# 평가하면 CPU가 고유 행동을 거의 쓰지 않는다. 중거리 교란기로 따로 판단한다.
+	if w.chars[pi]["id"] == "jiko" and gap > 120 and gap <= 215 \
+			and _can_use_slot(w, me, "tech") and _roll(100) < 36 + level * 4:
+		return _start_action(ActionLibrary.Action.TECH, facing)
+
 	# 1~3단계는 기존처럼 일반 판단 타이밍에만 후딜을 처벌한다.
 	if punishable:
 		return _punish(facing, gap, r_m, r_h)

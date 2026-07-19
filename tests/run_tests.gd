@@ -24,6 +24,7 @@ const SUITES := [
 	preload("res://tests/t_character_identity.gd"),
 	preload("res://tests/t_signature_fx.gd"),
 	preload("res://tests/t_mujin.gd"),
+	preload("res://tests/t_jiko.gd"),
 	preload("res://tests/t_soak.gd"),
 ]
 

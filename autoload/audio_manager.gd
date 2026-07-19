@@ -14,6 +14,7 @@ const EVENT_FILES := {
 	"swing_han": "res://fx/audio/swing_han.wav",
 	"swing_myo": "res://fx/audio/swing_myo.wav",
 	"swing_mujin": "res://fx/audio/swing_mujin.wav",
+	"swing_jiko": "res://fx/audio/swing_jiko.wav",
 	"grab": "res://fx/audio/grab.wav",
 	"ko": "res://fx/audio/ko.wav",
 	"super": "res://fx/audio/super.wav",

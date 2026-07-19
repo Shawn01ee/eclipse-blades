@@ -8,6 +8,7 @@ const FIGHTER_PATHS := [
 	"res://data/fighters/han.tres",
 	"res://data/fighters/myo.tres",
 	"res://data/fighters/mujin.tres",
+	"res://data/fighters/jiko.tres",
 ]
 
 const SLOT_BUTTON := {

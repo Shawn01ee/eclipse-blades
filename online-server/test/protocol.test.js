@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  PROTOCOL,
   allowedOrigin,
   cleanCharacter,
   cleanInput,
@@ -23,8 +24,9 @@ test("accepts only compact valid protocol payloads", () => {
 });
 
 test("validates fighter, input bitmask and strictly sequential tick", () => {
-  assert.equal(cleanCharacter(4), 4);
-  assert.equal(cleanCharacter(5), null);
+  assert.equal(PROTOCOL, 2);
+  assert.equal(cleanCharacter(5), 5);
+  assert.equal(cleanCharacter(6), null);
   assert.equal(cleanInput(1023), 1023);
   assert.equal(cleanInput(1024), null);
   assert.equal(cleanTick(12, 11), 12);

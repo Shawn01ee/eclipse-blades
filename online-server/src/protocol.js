@@ -1,4 +1,4 @@
-export const PROTOCOL = 1;
+export const PROTOCOL = 2;
 export const INPUT_MASK = 1023;
 export const MAX_TICK_LEAD = 240;
 export const ROOM_RE = /^[A-HJ-NP-Z2-9]{6}$/;
@@ -23,7 +23,7 @@ export function parseClientMessage(raw) {
 }
 
 export function cleanCharacter(value) {
-  return Number.isInteger(value) && value >= 0 && value <= 4 ? value : null;
+  return Number.isInteger(value) && value >= 0 && value <= 5 ? value : null;
 }
 
 export function cleanInput(value) {

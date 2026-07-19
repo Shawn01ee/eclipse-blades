@@ -1,0 +1,26 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "jiko_medium"
+display_name = "야차 연속베기"
+input_command = "M"
+role_note = "강·기술로 잇는 두 번째 압박"
+startup_frames = 8
+active_frames = 3
+recovery_frames = 15
+damage = 106
+chip_damage = 10
+priority = 2
+hitstop = 8
+hitstop_edge = 11
+hitstun = 21
+blockstun = 14
+pushback_hit = 28
+pushback_block = 23
+cancel_windows = [{"targets": ["jiko_heavy", "jiko_tech"], "from": 9, "to": 17, "on": ["hit", "block"]}]
+hitboxes_by_frame = [[9, 11, 28, 86, 94, 38]]
+motion_frames = [[1, 8, 1700], [9, 11, 4400], [12, 16, -500]]
+sound_event = "hit_m"

@@ -288,6 +288,21 @@ func _draw_signature(sp: Dictionary, t: float, fade: float) -> void:
 					draw_polyline(pts, seal if accent and k == waves - 1 else paper,
 							maxf(1.1, width * 0.55), true)
 
+		"jiko":
+			# 지코: 한 자루가 세 번 겹쳐 파고드는 야차의 이빨. 마지막 선만 인주색이다.
+			var teeth := 3 if slot in ["medium", "heavy", "super"] else 2
+			for k in teeth:
+				var u := float(k) / maxf(float(teeth - 1), 1.0)
+				var off := normal * lerpf(-10.0, 10.0, u) - along * float(k) * 8.0
+				var tooth_end := end + normal * (6.0 - u * 12.0)
+				draw_line(base + off, tooth_end, ink, width + 2.4, true)
+				draw_line(base + off, tooth_end,
+						seal if k == teeth - 1 and accent else paper,
+						maxf(1.1, width * 0.56), true)
+			if slot == "tech":
+				var hook := _quadratic_points(base - along * 24.0, base - normal * 18.0, end, 14)
+				draw_polyline(hook, Color(UiKit.SEAL, alpha * 0.75), maxf(1.4, width * 0.5), true)
+
 
 func _quadratic_points(a: Vector2, control: Vector2, b: Vector2, count: int) -> PackedVector2Array:
 	var points := PackedVector2Array()

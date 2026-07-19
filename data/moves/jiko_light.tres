@@ -1,0 +1,25 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://combat/move_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "jiko_light"
+display_name = "야차 빠른베기"
+input_command = "L"
+startup_frames = 5
+active_frames = 2
+recovery_frames = 10
+damage = 58
+chip_damage = 5
+priority = 1
+hitstop = 5
+hitstop_edge = 7
+hitstun = 16
+blockstun = 10
+pushback_hit = 22
+pushback_block = 18
+cancel_windows = [{"targets": ["jiko_medium", "jiko_tech"], "from": 6, "to": 12, "on": ["hit", "block"]}]
+hitboxes_by_frame = [[6, 7, 24, 96, 70, 25]]
+motion_frames = [[1, 5, 1200], [6, 7, 3000], [8, 11, -600]]
+sound_event = "hit_l"
