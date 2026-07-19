@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_grab"
-display_name = "야차 물어뜯기"
+display_name = "몸받음 밀어치기"
 input_command = "→+M (근접)"
 startup_frames = 8
 active_frames = 2

@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_air"
-display_name = "공중 야차치기"
+display_name = "도약 머리치기"
 input_command = "공중 공격"
 startup_frames = 6
 active_frames = 8
@@ -19,5 +19,5 @@ hitstun = 20
 blockstun = 12
 pushback_hit = 28
 pushback_block = 22
-hitboxes_by_frame = [[7, 14, 24, 18, 88, 78]]
+hitboxes_by_frame = [[7, 14, 24, 78, 88, 86]]
 sound_event = "hit_m"

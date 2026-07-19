@@ -81,6 +81,16 @@ func _build_scenario(world) -> void:
 			world.debug_set_x(1, 125)
 			for i in 45:
 				match_screen.replay_words.append([SimC.B_L if i == 0 else 0, 0])
+		"kendo_light", "kendo_medium", "kendo_heavy", "kendo_tech", "kendo_super":
+			world.debug_set_x(0, 0)
+			world.debug_set_x(1, 132)
+			if scenario == "kendo_super":
+				world.debug_set_nerve(0, SimC.NERVE_MAX)
+			var button: int = {"kendo_light": SimC.B_L, "kendo_medium": SimC.B_M,
+					"kendo_heavy": SimC.B_H, "kendo_tech": SimC.B_T,
+					"kendo_super": SimC.B_SUPER}.get(scenario, SimC.B_L)
+			for i in 90:
+				match_screen.replay_words.append([button if i == 0 else 0, 0])
 		"mujin_nerve":
 			# 무진의 사맥 강화 파도 연계. 커맨드·자원 소비·활성 칼 판정을 한 화면에 검수한다.
 			world.debug_set_x(0, -155)
@@ -123,6 +133,8 @@ func _scenario_ready(world) -> bool:
 			return world.s["p"][0]["state"] == SimC.ST_ATTACK \
 				and not world.active_weapon_rects(0, true).is_empty()
 		"hit":
+			return world.s["p"][1]["state"] == SimC.ST_HITSTUN
+		"kendo_light", "kendo_medium", "kendo_heavy", "kendo_tech", "kendo_super":
 			return world.s["p"][1]["state"] == SimC.ST_HITSTUN
 		"mujin_nerve":
 			return world.s["p"][0]["move"] == "mujin_motion_nerve" \

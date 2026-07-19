@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_tech"
-display_name = "야차 돌아치기"
+display_name = "중단 찌르기"
 input_command = "T"
-role_note = "물러나 흘린 뒤 다시 파고들기"
+role_note = "물러서 간격을 만든 뒤 목을 바르게 찌르기"
 startup_frames = 10
 active_frames = 3
 recovery_frames = 21
@@ -21,6 +21,6 @@ hitstun = 21
 blockstun = 13
 pushback_hit = 35
 pushback_block = 26
-hitboxes_by_frame = [[11, 13, 30, 88, 104, 34]]
+hitboxes_by_frame = [[11, 13, 34, 104, 112, 24]]
 motion_frames = [[1, 4, -6800], [5, 10, 11800]]
 sound_event = "hit_m"

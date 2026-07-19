@@ -272,9 +272,14 @@ func _handle_event(e: Dictionary) -> void:
 			_spawn_move_signature(e)
 		"hit":
 			var kind: String = e["kind"]
+			var attacker_id: String = world.chars[e["p"]]["id"]
 			var snd: String = {"light": "hit_l", "medium": "hit_m", "heavy": "hit_h", "tech": "hit_l", "super": "hit_h"}.get(kind, "hit_l")
 			var edge: bool = e.get("edge", false)
 			AudioManager.play(snd, 1.15 if edge else 1.0)
+			if attacker_id == "jiko":
+				# 칼날음 위에 짧은 대나무 격음을 겹쳐 죽도 타격으로 들리게 한다.
+				AudioManager.play("block", {"light": 1.28, "medium": 1.12,
+						"heavy": 0.92, "tech": 1.22, "super": 0.84}.get(kind, 1.0), 0.52)
 			fx.spawn("hit_edge" if edge else "hit", pos, {"light": 0.8, "medium": 1.1, "heavy": 1.6, "tech": 0.8, "super": 2.0}.get(kind, 1.0))
 			var dir: int = world.s["p"][e["p"]]["facing"]
 			# 그림 속 무기, 피격 반동, 이펙트 모두 시뮬이 계산한 같은 접촉 좌표를 사용한다.
@@ -282,9 +287,11 @@ func _handle_event(e: Dictionary) -> void:
 			views[1 - e["p"]].receive_impact(dir, kind)
 			fx.spawn("blade_hit", pos,
 					{"light": 0.75, "medium": 1.0, "heavy": 1.35, "tech": 0.8,
-					"super": 1.65}.get(kind, 1.0), {"dir": dir, "edge": edge})
-			var gush: bool = edge or kind == "heavy" or kind == "super"
-			fx.spray_blood(pos, dir, e.get("dmg", 80) / 42.0, gush)
+					"super": 1.65}.get(kind, 1.0), {"dir": dir, "edge": edge,
+					"char": attacker_id, "slot": kind})
+			var gush: bool = (edge or kind == "heavy" or kind == "super") and attacker_id != "jiko"
+			var blood_scale := 0.42 if attacker_id == "jiko" else 1.0
+			fx.spray_blood(pos, dir, e.get("dmg", 80) / 42.0 * blood_scale, gush)
 			_add_shake({"light": 2.0, "medium": 4.0, "heavy": 9.0, "tech": 2.0, "super": 12.0}.get(kind, 2.0) + (3.0 if edge else 0.0))
 			if kind == "heavy" or edge:
 				_flash_hit(0.3)

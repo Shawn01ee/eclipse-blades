@@ -138,19 +138,22 @@ func _draw() -> void:
 			"signature":
 				_draw_signature(sp, t, fade)
 			"blade_hit":
-				# 실제 접점 중심의 짧은 절단선. 첫 수 프레임은 히트스톱과 함께 거의 고정된다.
-				var direction := float(sp.get("dir", 1))
-				var edge: bool = sp.get("edge", false)
-				var cut_dir := Vector2(0.34 * direction, -1.0).normalized()
-				var cut_len := (24.0 + 20.0 * s) * (0.90 + 0.15 * t)
-				draw_line(pos - cut_dir * cut_len, pos + cut_dir * cut_len,
-						Color(UiKit.INK, 0.82 * fade), 10.0 * (1.0 - 0.55 * t), true)
-				draw_line(pos - cut_dir * cut_len, pos + cut_dir * cut_len,
-						Color(UiKit.PAPER_LIGHT, 0.96 * fade), 4.5 * (1.0 - 0.45 * t), true)
-				draw_line(pos - cut_dir * cut_len * 0.34, pos + cut_dir * cut_len * 0.34,
-						Color(UiKit.SEAL if edge else BLOOD_FRESH, 0.95 * fade), 2.2, true)
-				draw_arc(pos, 8.0 + 28.0 * t * s, 0, TAU, 28,
-						Color(UiKit.PAPER_LIGHT, 0.75 * fade), 2.5)
+				if sp.get("char", "") == "jiko":
+					_draw_shinai_contact(sp, t, fade)
+				else:
+					# 실제 접점 중심의 짧은 절단선. 첫 수 프레임은 히트스톱과 함께 거의 고정된다.
+					var direction := float(sp.get("dir", 1))
+					var edge: bool = sp.get("edge", false)
+					var cut_dir := Vector2(0.34 * direction, -1.0).normalized()
+					var cut_len := (24.0 + 20.0 * s) * (0.90 + 0.15 * t)
+					draw_line(pos - cut_dir * cut_len, pos + cut_dir * cut_len,
+							Color(UiKit.INK, 0.82 * fade), 10.0 * (1.0 - 0.55 * t), true)
+					draw_line(pos - cut_dir * cut_len, pos + cut_dir * cut_len,
+							Color(UiKit.PAPER_LIGHT, 0.96 * fade), 4.5 * (1.0 - 0.45 * t), true)
+					draw_line(pos - cut_dir * cut_len * 0.34, pos + cut_dir * cut_len * 0.34,
+							Color(UiKit.SEAL if edge else BLOOD_FRESH, 0.95 * fade), 2.2, true)
+					draw_arc(pos, 8.0 + 28.0 * t * s, 0, TAU, 28,
+							Color(UiKit.PAPER_LIGHT, 0.75 * fade), 2.5)
 			"hit", "hit_edge":
 				var n := 6 + int(s * 3.0)
 				for k in n:
@@ -289,19 +292,79 @@ func _draw_signature(sp: Dictionary, t: float, fade: float) -> void:
 							maxf(1.1, width * 0.55), true)
 
 		"jiko":
-			# 지코: 한 자루가 세 번 겹쳐 파고드는 야차의 이빨. 마지막 선만 인주색이다.
-			var teeth := 3 if slot in ["medium", "heavy", "super"] else 2
-			for k in teeth:
-				var u := float(k) / maxf(float(teeth - 1), 1.0)
-				var off := normal * lerpf(-10.0, 10.0, u) - along * float(k) * 8.0
-				var tooth_end := end + normal * (6.0 - u * 12.0)
-				draw_line(base + off, tooth_end, ink, width + 2.4, true)
-				draw_line(base + off, tooth_end,
-						seal if k == teeth - 1 and accent else paper,
-						maxf(1.1, width * 0.56), true)
-			if slot == "tech":
-				var hook := _quadratic_points(base - along * 24.0, base - normal * 18.0, end, 14)
-				draw_polyline(hook, Color(UiKit.SEAL, alpha * 0.75), maxf(1.4, width * 0.5), true)
+			# 지코: 손목·허리·머리·찌르기의 검도 타격선을 각기 다른 방향으로 분리한다.
+			match slot:
+				"light":
+					# 손목 — 작고 빠른 직선과 손목 보호구를 닮은 짧은 괄호.
+					draw_line(base, end, ink, width + 2.0, true)
+					draw_line(base, end, paper, maxf(1.2, width * 0.62), true)
+					draw_arc(end, 7.0 + strength * 3.0, -PI * 0.70, PI * 0.70,
+							16, Color(UiKit.SEAL, alpha * 0.58), 1.8, true)
+				"medium":
+					# 허리 — 몸통을 가로지르는 넓은 대각선 두 겹.
+					var control := (base + end) * 0.5 + normal * 28.0 * dir
+					var do_arc := _quadratic_points(base, control, end, 18)
+					draw_polyline(do_arc, ink, width + 3.0, true)
+					draw_polyline(do_arc, paper, width, true)
+					var do_inner := _quadratic_points(base + normal * 8.0,
+							control + normal * 5.0, end + normal * 5.0, 18)
+					draw_polyline(do_inner, Color(UiKit.SEAL, alpha * 0.54), 1.7, true)
+				"heavy":
+					# 머리 — 흔들림 없는 수직 내려치기와 머리 보호구 반원.
+					var men_top := Vector2(end.x - dir * 12.0, minf(base.y, end.y) - 66.0)
+					draw_line(men_top, end, ink, width + 4.0, true)
+					draw_line(men_top, end, paper, width, true)
+					draw_arc(end, 12.0 + 12.0 * t, PI, TAU, 22,
+							Color(UiKit.SEAL, alpha * 0.72), 2.2, true)
+				"tech":
+					# 중단 찌르기 — 한 점으로 수렴하는 중심선과 두 번의 잔잔한 파문.
+					draw_line(base - along * 20.0, end, ink, width + 3.0, true)
+					draw_line(base - along * 20.0, end, paper, width, true)
+					for ring in 2:
+						draw_arc(end, (7.0 + ring * 8.0) * (0.65 + t), 0.0, TAU, 24,
+								Color(UiKit.SEAL if ring == 1 else UiKit.PAPER_LIGHT,
+								alpha * (0.72 if ring == 1 else 0.86)), 1.8, true)
+				"super":
+					# 기검체일치 — 네 타격을 한 호흡 안에서 겹치되 선 수는 절제한다.
+					var span := 28.0 + strength * 8.0
+					draw_line(base - normal * 10.0, end - normal * 10.0, ink, width + 2.0, true)
+					draw_line(base - normal * 10.0, end - normal * 10.0, paper, width, true)
+					var super_arc := _quadratic_points(base + normal * span,
+							(base + end) * 0.5 - normal * span, end, 18)
+					draw_polyline(super_arc, ink, width + 2.5, true)
+					draw_line(Vector2(end.x - dir * 10.0, end.y - 70.0), end,
+							Color(UiKit.SEAL, alpha * 0.76), width, true)
+					draw_arc(end, 10.0 + 18.0 * t, 0.0, TAU, 28, paper, 2.0, true)
+				_:
+					draw_line(base, end, ink, width + 2.0, true)
+					draw_line(base, end, paper, width, true)
+
+
+## 죽도는 살을 베는 절단선 대신 맞은 부위에서 짧게 멈추는 타격표식으로 표현한다.
+func _draw_shinai_contact(sp: Dictionary, t: float, fade: float) -> void:
+	var pos: Vector2 = sp["pos"]
+	var s: float = sp["s"]
+	var direction := float(sp.get("dir", 1))
+	var slot: String = sp.get("slot", "light")
+	var axis := Vector2(direction, 0.0)
+	if slot == "medium":
+		axis = Vector2(direction, 0.72).normalized()
+	elif slot == "heavy" or slot == "super":
+		axis = Vector2(0.08 * direction, 1.0).normalized()
+	var normal := Vector2(-axis.y, axis.x)
+	var half_len := 18.0 + s * 15.0
+	var ink := Color(UiKit.INK, 0.82 * fade)
+	var paper := Color(UiKit.PAPER_LIGHT, 0.94 * fade)
+	draw_line(pos - axis * half_len, pos + axis * half_len, ink,
+			8.0 * (1.0 - 0.45 * t), true)
+	draw_line(pos - axis * half_len, pos + axis * half_len, paper,
+			3.0 * (1.0 - 0.35 * t), true)
+	draw_line(pos - normal * (9.0 + s * 3.0), pos + normal * (9.0 + s * 3.0),
+			Color(UiKit.SEAL, 0.72 * fade), 2.0, true)
+	for ring in 2:
+		draw_arc(pos, (7.0 + ring * 9.0 + 24.0 * t * s), 0.0, TAU, 28,
+				Color(UiKit.PAPER_LIGHT if ring == 0 else UiKit.SEAL,
+				(0.72 if ring == 0 else 0.42) * fade), 1.8, true)
 
 
 func _quadratic_points(a: Vector2, control: Vector2, b: Vector2, count: int) -> PackedVector2Array:

@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_medium"
-display_name = "야차 연속치기"
+display_name = "허리치기"
 input_command = "M"
-role_note = "강·기술로 잇는 두 번째 압박"
+role_note = "몸통을 대각선으로 치며 강·기술로 잇기"
 startup_frames = 8
 active_frames = 3
 recovery_frames = 15
@@ -21,6 +21,6 @@ blockstun = 14
 pushback_hit = 28
 pushback_block = 23
 cancel_windows = [{"targets": ["jiko_heavy", "jiko_tech"], "from": 9, "to": 17, "on": ["hit", "block"]}]
-hitboxes_by_frame = [[9, 11, 28, 86, 94, 38]]
+hitboxes_by_frame = [[9, 11, 30, 58, 96, 64]]
 motion_frames = [[1, 8, 1700], [9, 11, 4400], [12, 16, -500]]
 sound_event = "hit_m"

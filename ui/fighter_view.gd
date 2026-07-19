@@ -538,7 +538,27 @@ func _rig_weapon_solution(chest: Vector2, shoulder: Vector2, hh: float, hw: floa
 		var hi := grip + Vector2(reach * 0.92, -hh * 0.56)
 		var lo := grip + Vector2(reach, -hh * (0.08 if _st == SimC.ST_AIR_ATTACK else 0.22))
 		var slot: String = _mv.get("slot", "medium")
-		if slot == "light" or slot == "tech":
+		if weapon_kind == "shinai" and slot == "light":
+			# 손목: 중단세에서 작은 동작으로 앞손 높이를 짧게 친다.
+			coil = grip + Vector2(-reach * 0.12, -hh * 0.18)
+			hi = grip + Vector2(reach * 0.92, -hh * 0.06)
+			lo = grip + Vector2(reach, hh * 0.05)
+		elif weapon_kind == "shinai" and slot == "medium":
+			# 허리: 어깨 위에서 반대쪽 몸통으로 대각선을 긋는다.
+			coil = grip + Vector2(-reach * 0.22, -hh * 0.42)
+			hi = grip + Vector2(reach * 0.72, -hh * 0.28)
+			lo = grip + Vector2(reach, hh * 0.20)
+		elif weapon_kind == "shinai" and slot == "heavy":
+			# 머리: 죽도를 정수리 위로 들었다가 머리 높이로 곧게 내려친다.
+			coil = grip + Vector2(reach * 0.06, -hh * 0.72)
+			hi = grip + Vector2(reach * 0.26, -hh * 0.64)
+			lo = grip + Vector2(reach * 0.94, -hh * 0.18)
+		elif weapon_kind == "shinai" and slot == "tech":
+			# 찌르기: 궤적 높이를 거의 바꾸지 않고 중심선을 관통한다.
+			coil = grip + Vector2(-reach * 0.18, -hh * 0.04)
+			hi = grip + Vector2(reach * 0.96, -hh * 0.05)
+			lo = grip + Vector2(reach, -hh * 0.03)
+		elif slot == "light" or slot == "tech":
 			hi = grip + Vector2(reach, -hh * 0.26)
 			lo = grip + Vector2(reach, -hh * 0.18)
 		elif slot == "heavy":

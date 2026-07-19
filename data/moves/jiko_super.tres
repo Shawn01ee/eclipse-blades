@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1")
 id = "jiko_super"
-display_name = "오의 야차난무"
+display_name = "오의 기검체일치"
 input_command = "오의 키 (사맥 3) / ↓↘→+H+T"
-role_note = "세 번 파고드는 야차 오의"
+role_note = "손목·허리·머리·찌르기를 한 호흡에 잇기"
 startup_frames = 18
 active_frames = 7
 recovery_frames = 41

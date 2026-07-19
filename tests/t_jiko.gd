@@ -9,9 +9,25 @@ static func run(t, _args: Dictionary) -> void:
 	var fds := Registry.load_all()
 	t.eq(fds[5].id, "jiko", "6번째 파이터 지코 등록")
 	t.eq(fds[5].weapon_name, "죽도", "지코 무기는 죽도로 표시")
-	t.ok(fds[5].moves["light"].display_name.contains("치기") \
-			and fds[5].moves["heavy"].display_name.contains("치기"),
-			"죽도 공격은 베기가 아닌 치기로 구분")
+	t.eq(fds[5].moves["light"].display_name, "손목치기", "약공격은 빠른 손목 타격")
+	t.eq(fds[5].moves["medium"].display_name, "허리치기", "중공격은 대각선 허리 타격")
+	t.eq(fds[5].moves["heavy"].display_name, "머리치기", "강공격은 큰 머리 내려치기")
+	t.eq(fds[5].moves["tech"].display_name, "중단 찌르기", "기술은 간격을 재는 중심선 찌르기")
+	t.ok(fds[5].moves["super"].display_name.contains("기검체일치"), "오의는 검도식 기검체일치")
+	t.ok(fds[5].moves["light"].startup_frames < fds[5].moves["medium"].startup_frames \
+			and fds[5].moves["medium"].startup_frames < fds[5].moves["heavy"].startup_frames,
+			"손목→허리→머리 순서로 동작 크기와 발동 시간이 증가")
+	t.ok(fds[5].moves["heavy"].hitboxes_by_frame[0][3] \
+			> fds[5].moves["medium"].hitboxes_by_frame[0][3],
+			"머리치기 판정이 허리치기보다 높은 부위를 노림")
+	var fx_source := FileAccess.get_file_as_string("res://ui/fx_layer.gd")
+	var match_source := FileAccess.get_file_as_string("res://ui/match_screen.gd")
+	t.ok(fx_source.contains("func _draw_shinai_contact") \
+			and fx_source.contains('"light":') and fx_source.contains('"tech":'),
+			"검도 타격별 궤적과 죽도 접촉 이펙트 분리")
+	t.ok(match_source.contains('attacker_id == "jiko"') \
+			and match_source.contains("blood_scale := 0.42"),
+			"죽도 타격음 추가 및 칼날식 출혈 연출 절제")
 	var view_source := FileAccess.get_file_as_string("res://ui/fighter_view.gd")
 	t.ok(view_source.contains('"jiko": "shinai"') and view_source.contains("func _wp_shinai"),
 			"지코 전투 모델에 전용 죽도 렌더러 연결")
