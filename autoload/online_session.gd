@@ -10,6 +10,7 @@ signal network_error(message: String)
 signal desync_detected(tick: int)
 
 const PROTOCOL := 2
+const SIM_BUILD := "2026-07-20-hayate-rushdown"
 const INPUT_MASK := 1023
 const ROOM_ALPHABET := "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const DEFAULT_RELAY_URL := ""
@@ -29,6 +30,7 @@ var _intentional_close := false
 var _opened := false
 var _ping_elapsed := 0.0
 var _inputs := [{}, {}]
+var _server_error_received := false
 
 
 func _ready() -> void:
@@ -55,13 +57,18 @@ func _process(delta: float) -> void:
 			_send({"t": "ping", "n": Time.get_ticks_msec()})
 	elif ws_state == WebSocketPeer.STATE_CLOSED:
 		var was_intentional := _intentional_close
+		var close_code := _socket.get_close_code()
+		var close_reason := _socket.get_close_reason()
 		_socket = null
 		_opened = false
 		role = -1
 		peer_count = 0
-		if not was_intentional:
+		if not was_intentional and not _server_error_received:
 			_set_status("disconnected")
-			network_error.emit("온라인 서버와 연결이 끊겼습니다.")
+			if close_code == 4001 or close_reason == "version mismatch":
+				network_error.emit("게임이 갱신되었습니다. 화면을 다시 열어주세요.")
+			else:
+				network_error.emit("온라인 서버와 연결이 끊겼습니다.")
 
 
 func connect_room(raw_code: String) -> bool:
@@ -84,8 +91,9 @@ func connect_room(raw_code: String) -> bool:
 	_intentional_close = false
 	_opened = false
 	_ping_elapsed = 0.0
+	_server_error_received = false
 	_set_status("connecting")
-	var url := relay_url.trim_suffix("/") + "/room/" + code + "?v=" + str(PROTOCOL)
+	var url := room_url(relay_url, code)
 	var err := _socket.connect_to_url(url)
 	if err != OK:
 		_socket = null
@@ -228,6 +236,8 @@ func _receive_packet(text: String) -> void:
 		"desync":
 			desync_detected.emit(int(data.get("k", -1)))
 		"error":
+			_server_error_received = true
+			_set_status("error")
 			network_error.emit(String(data.get("message", "온라인 서버 오류")))
 
 
@@ -264,3 +274,8 @@ static func make_room_code() -> String:
 	for _i in 6:
 		out += ROOM_ALPHABET[rng.randi_range(0, ROOM_ALPHABET.length() - 1)]
 	return out
+
+
+static func room_url(base_url: String, code: String) -> String:
+	return base_url.trim_suffix("/") + "/room/" + code + "?v=" + str(PROTOCOL) \
+			+ "&b=" + SIM_BUILD.uri_encode()

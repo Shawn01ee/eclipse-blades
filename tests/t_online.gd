@@ -36,6 +36,10 @@ static func run(t, _args: Dictionary) -> void:
 	var generated: String = SessionScript.make_room_code()
 	t.eq(generated.length(), 6, "새 방 코드는 6자리")
 	t.eq(SessionScript.sanitize_room_code(generated), generated, "새 방 코드는 허용 문자만 사용")
+	var versioned_url := SessionScript.room_url("wss://relay.example/", "AB2Z9X")
+	t.ok(versioned_url.contains("v=2") \
+			and versioned_url.contains("b=2026-07-20-hayate-rushdown"),
+			"릴레이 연결에 프로토콜과 시뮬레이션 빌드 ID 포함")
 
 	var session = SessionScript.new()
 	session.role = 0
@@ -48,6 +52,19 @@ static func run(t, _args: Dictionary) -> void:
 			"P1/P2 슬롯 순서로 입력 반환")
 	t.ok(not session.has_inputs(7), "소비한 틱 입력은 큐에서 제거")
 	session.free()
+
+	var stale_session = SessionScript.new()
+	var stale_messages: Array[String] = []
+	stale_session.network_error.connect(func(message: String): stale_messages.append(message))
+	stale_session._receive_packet(JSON.stringify({
+		"t": "error",
+		"code": "version_mismatch",
+		"message": "게임이 갱신되었습니다. 두 기기에서 화면을 다시 열어주세요.",
+	}))
+	t.eq(stale_session.status, "error", "구버전 연결은 로비 전에 중단")
+	t.ok(stale_messages.size() == 1 and stale_messages[0].contains("갱신"),
+			"구버전 사용자에게 재실행 안내")
+	stale_session.free()
 
 	# 상대 입력이 4틱 늦게 와도 로컬은 매 프레임 진행하고, 도착 뒤 권위 상태로 복원한다.
 	var predicted_world := H.mk(0, 1, 31)

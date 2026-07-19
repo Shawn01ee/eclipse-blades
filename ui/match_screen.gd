@@ -618,7 +618,7 @@ func _on_online_desync(tick: int) -> void:
 	results_panel = _make_panel("동기화 오류", [
 		["온라인 방 만들기", _goto_online],
 		["메인 메뉴", _goto_menu],
-	], "틱 %d에서 두 기기의 상태가 달라졌습니다." % tick)
+	], "틱 %d에서 두 기기의 상태가 서로 다릅니다." % tick)
 
 
 func _make_panel(title: String, buttons: Array, foot: String) -> PanelContainer:

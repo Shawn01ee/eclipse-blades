@@ -121,6 +121,8 @@ func _build_scenario(world) -> void:
 			match_screen._toggle_pause()
 		"result":
 			match_screen._show_results()
+		"online_desync":
+			match_screen._on_online_desync(12000)
 		_:
 			world.debug_set_x(0, -150)
 			world.debug_set_x(1, 95)
@@ -156,7 +158,7 @@ func _scenario_ready(world) -> bool:
 				and not world.active_weapon_rects(0, true).is_empty()
 		"pause":
 			return match_screen.pause_panel != null
-		"result":
+		"result", "online_desync":
 			return match_screen.results_panel != null
 		_:
 			return world.s["p"][0]["state"] == SimC.ST_AIR_ATTACK \

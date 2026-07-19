@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1784472125|1448287';
+const CACHE_VERSION = '1784474382|1435920';
 /** @type {string} */
 const CACHE_PREFIX = '일식검담 ECLIPSE BLA-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
@@ -23,6 +23,7 @@ const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
 self.addEventListener('install', (event) => {
 	event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHED_FILES)));
 });
+
 self.addEventListener('activate', (event) => {
 	event.waitUntil(caches.keys().then(
 		function (keys) {
@@ -161,4 +162,14 @@ self.addEventListener('message', (event) => {
 			self.skipWaiting().then(() => self.clients.claim()).then(() => self.clients.matchAll()).then((all) => all.forEach((c) => c.navigate(c.url)));
 		}
 	});
+});
+
+// Eclipse Blades: activate a freshly deployed build immediately and take over
+// existing tabs. The page reloads once on controllerchange, so its HTML, WASM,
+// PCK and simulation build ID always come from the same deployment.
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
 });

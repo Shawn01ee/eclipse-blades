@@ -10,6 +10,7 @@ echo "== 리소스 임포트 =="
 "$GODOT" --headless --path . --import
 echo "== 웹 릴리스 내보내기 =="
 "$GODOT" --headless --path . --export-release "Web" build/web/index.html
+python3 tools/postprocess_web.py
 echo "완료 → build/web/index.html"
 echo
 echo "로컬 확인 (COOP/COEP 헤더 포함 서버):"
