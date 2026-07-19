@@ -44,8 +44,12 @@ static func run(t, _args: Dictionary) -> void:
 			"모바일 첫 터치에서 전체화면·가로 잠금 요청")
 	t.ok(preset.contains("'pointerdown',enterMobileMode") \
 			and preset.contains("'touchstart',enterMobileMode") \
-			and preset.contains("once:true"),
-			"포인터·터치 환경 모두 모바일 화면 전환 연결")
+			and preset.contains("'click',enterMobileMode") \
+			and not preset.contains("once:true"),
+			"전체화면 성공 전에는 다음 포인터·터치에서 재시도")
+	t.ok(preset.contains("'fullscreenchange',fit") \
+			and preset.contains("dispatchEvent(new Event('resize'))"),
+			"전체화면 전환 직후 캔버스 크기 다시 계산")
 	t.ok(preset.contains("progressive_web_app/enabled=true") \
 			and preset.contains("progressive_web_app/display=0") \
 			and preset.contains("progressive_web_app/orientation=1"),
