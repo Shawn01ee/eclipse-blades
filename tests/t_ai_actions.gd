@@ -32,13 +32,38 @@ static func run(t, _args: Dictionary) -> void:
 					words_valid = false
 	t.ok(words_valid, "모든 액션이 유효한 입력 비트와 SOCD 규칙 사용")
 
+	# 1~3은 기존 학습 구간, 4부터 반응·가드·실수율이 큰 폭으로 강화된다.
+	t.eq(CpuBrain.MAX_LEVEL, 6, "CPU 최대 난이도 6단계")
+	t.eq(CpuBrain.new(0, 0, 1).level, 1, "CPU 난이도 하한 보정")
+	t.eq(CpuBrain.new(0, 99, 1).level, 6, "CPU 난이도 상한 보정")
+	t.eq(CpuBrain.CADENCE.size(), 6, "판단 주기 6단계 프로필")
+	t.ok(CpuBrain.REACT_DELAY[3] <= 4 and CpuBrain.CADENCE[3] <= 4,
+			"4단계부터 4프레임 이내 반응·재판단")
+	t.ok(CpuBrain.BLOCK_PROB[3] >= 85 and CpuBrain.ERR_PROB[3] <= 5,
+			"4단계부터 높은 가드율·낮은 실수율")
+	t.ok(CpuBrain.REACT_DELAY[5] == 1 and CpuBrain.BLOCK_PROB[5] >= 98 \
+			and CpuBrain.ERR_PROB[5] == 0, "6단계 최고 반응·가드·정확도")
+
+	# 같은 긴 재판단 대기 중이어도 4단계부터는 공개된 상대 후딜을 즉시 처벌한다.
+	var punish_world := H.mk(0, 1, 7701)
+	punish_world.s["p"][1]["state"] = SimC.ST_RECOIL
+	punish_world.s["p"][1]["x"] = punish_world.s["p"][0]["x"] + 20 * SimC.FP
+	var normal := CpuBrain.new(0, 3, 88)
+	var expert := CpuBrain.new(0, 4, 88)
+	normal.cool = 99
+	expert.cool = 99
+	var facing: int = punish_world.s["p"][0]["facing"]
+	t.eq(normal.think(punish_world), 0, "3단계는 기존 판단 주기를 기다림")
+	t.eq(expert.think(punish_world), A.frames(A.Action.MEDIUM, facing)[0],
+			"4단계는 보이는 후딜을 즉시 중베기로 처벌")
+
 	# 같은 월드/CPU 시드에서는 매 틱 입력과 최종 상태가 완전히 같아야 한다.
 	var wa := H.mk(0, 1, 20260718)
 	var wb := H.mk(0, 1, 20260718)
-	var a1 := CpuBrain.new(0, 4, 101)
-	var a2 := CpuBrain.new(1, 4, 202)
-	var b1 := CpuBrain.new(0, 4, 101)
-	var b2 := CpuBrain.new(1, 4, 202)
+	var a1 := CpuBrain.new(0, 6, 101)
+	var a2 := CpuBrain.new(1, 6, 202)
+	var b1 := CpuBrain.new(0, 6, 101)
+	var b2 := CpuBrain.new(1, 6, 202)
 	var deterministic := true
 	for tick in 1800:
 		var wa1 := a1.think(wa)
@@ -53,8 +78,8 @@ static func run(t, _args: Dictionary) -> void:
 
 	# 짧은 1선승 실전에서 양 CPU가 교착 없이 경기를 끝낸다.
 	var fight := H.mk(2, 3, 909, {"timer_ticks": 20 * SimC.TPS, "wins_needed": 1})
-	var cpu1 := CpuBrain.new(0, 4, 303)
-	var cpu2 := CpuBrain.new(1, 4, 404)
+	var cpu1 := CpuBrain.new(0, 6, 303)
+	var cpu2 := CpuBrain.new(1, 6, 404)
 	for tick in 6000:
 		fight.step(cpu1.think(fight), cpu2.think(fight))
 		if fight.s["phase"] == SimC.PH_MATCH_END:

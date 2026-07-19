@@ -17,3 +17,9 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(menu_source.contains("var utility := HBoxContainer.new()") \
 			and menu_source.contains("UTILITY_BUTTON_SIZE := Vector2(304, 46)"),
 			"설정·종료를 별도 하단 보조 메뉴로 분리")
+	var hud_file := FileAccess.open("res://ui/hud.gd", FileAccess.READ)
+	var hud_source := hud_file.get_as_text() if hud_file != null else ""
+	t.ok(hud_source.contains("const ENERGY_BAR_Y := 72.0") \
+			and hud_source.contains("const IDENTITY_BASELINE_Y := 106.0") \
+			and hud_source.contains("const NERVE_CENTER_Y := 132.0"),
+			"전투 HUD의 기력·검객명·사맥을 겹치지 않는 독립 행으로 배치")

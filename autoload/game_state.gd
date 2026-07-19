@@ -15,7 +15,7 @@ var _seed_rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
 	_seed_rng.randomize()
-	cpu_level = int(SettingsManager.data["cpu_level"])
+	cpu_level = clampi(int(SettingsManager.data["cpu_level"]), 1, CpuBrain.MAX_LEVEL)
 
 
 func next_match_seed() -> int:

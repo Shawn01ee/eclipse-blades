@@ -56,6 +56,7 @@ func load_settings() -> void:
 					data[k] = parsed[k]
 	if not (data["keys"] is Dictionary):
 		data["keys"] = {}
+	data["cpu_level"] = clampi(int(data["cpu_level"]), 1, 6)
 
 
 func save_settings() -> void:

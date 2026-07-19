@@ -39,7 +39,7 @@ func _ready() -> void:
 	v.add_child(UiKit.vspace(14))
 
 	v.add_child(UiKit.label("대전", 30))
-	_slider(v, "CPU 난이도", "cpu_level", 1, 4)
+	_slider(v, "CPU 난이도", "cpu_level", 1, CpuBrain.MAX_LEVEL)
 	v.add_child(UiKit.vspace(14))
 
 	v.add_child(UiKit.label("조작 (키보드 리맵)", 30))

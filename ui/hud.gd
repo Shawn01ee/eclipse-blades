@@ -1,6 +1,17 @@
 extends Control
 ## HUD: 체력·기력·사맥 3칸·라운드·타이머 (기획 원칙: 정보 최소화).
 
+# 각 정보는 독립된 행을 사용한다. 글꼴의 실제 상승부까지 고려해 최소 8px씩
+# 띄워 두므로, 작은 화면에 축소되어도 체력·기력·검객명이 서로 겹치지 않는다.
+const HP_BAR_Y := 38.0
+const ENERGY_BAR_Y := 72.0
+const ENERGY_LABEL_BASELINE_Y := 80.0
+const IDENTITY_BASELINE_Y := 106.0
+const NERVE_CENTER_Y := 132.0
+const READY_BASELINE_Y := 139.0
+const CALLOUT_NAME_BASELINE_Y := 168.0
+const CALLOUT_ROLE_BASELINE_Y := 190.0
+
 var world: CombatWorld
 var names := ["", ""]
 var weapons := ["", ""]
@@ -102,19 +113,19 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var f := ThemeDB.fallback_font
 	# 체력 바 (바깥에서 안으로 소모)
-	_bar(Rect2(60, 38, 500, 26), _hp[0] / _max_hp[0], _ghost[0] / _max_hp[0], false)
-	_bar(Rect2(720, 38, 500, 26), _hp[1] / _max_hp[1], _ghost[1] / _max_hp[1], true)
-	_energy_bar(Rect2(60, 68, 180, 6), float(_energy[0]) / SimC.ENERGY_MAX, false)
-	_energy_bar(Rect2(1040, 68, 180, 6), float(_energy[1]) / SimC.ENERGY_MAX, true)
-	draw_string(f, Vector2(246, 76), "기력", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UiKit.GRAY)
-	draw_string(f, Vector2(994, 76), "기력", HORIZONTAL_ALIGNMENT_RIGHT, 40, 12, UiKit.GRAY)
-	draw_string(f, Vector2(62, 88), names[0] + " · " + weapons[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UiKit.INK)
-	draw_string(f, Vector2(1000, 88), names[1] + " · " + weapons[1], HORIZONTAL_ALIGNMENT_RIGHT, 218, 18, UiKit.INK)
+	_bar(Rect2(60, HP_BAR_Y, 500, 26), _hp[0] / _max_hp[0], _ghost[0] / _max_hp[0], false)
+	_bar(Rect2(720, HP_BAR_Y, 500, 26), _hp[1] / _max_hp[1], _ghost[1] / _max_hp[1], true)
+	_energy_bar(Rect2(60, ENERGY_BAR_Y, 180, 6), float(_energy[0]) / SimC.ENERGY_MAX, false)
+	_energy_bar(Rect2(1040, ENERGY_BAR_Y, 180, 6), float(_energy[1]) / SimC.ENERGY_MAX, true)
+	draw_string(f, Vector2(246, ENERGY_LABEL_BASELINE_Y), "기력", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, UiKit.GRAY)
+	draw_string(f, Vector2(994, ENERGY_LABEL_BASELINE_Y), "기력", HORIZONTAL_ALIGNMENT_RIGHT, 40, 12, UiKit.GRAY)
+	draw_string(f, Vector2(62, IDENTITY_BASELINE_Y), names[0] + " · " + weapons[0], HORIZONTAL_ALIGNMENT_LEFT, -1, 18, UiKit.INK)
+	draw_string(f, Vector2(1000, IDENTITY_BASELINE_Y), names[1] + " · " + weapons[1], HORIZONTAL_ALIGNMENT_RIGHT, 218, 18, UiKit.INK)
 	# 사맥 3칸 (마름모)
 	for i in 2:
 		for k in 3:
 			var cx := 70.0 + k * 34.0 if i == 0 else 1210.0 - k * 34.0
-			var c := Vector2(cx, 106)
+			var c := Vector2(cx, NERVE_CENTER_Y)
 			var pts := PackedVector2Array([c + Vector2(0, -9), c + Vector2(9, 0), c + Vector2(0, 9), c + Vector2(-9, 0)])
 			if k < _nerve[i]:
 				draw_polygon(pts, [UiKit.SEAL if _nerve[i] >= 3 else UiKit.INK])
@@ -124,7 +135,7 @@ func _draw() -> void:
 			var ready_text := "Q / LB  오의" if i == 0 else "P / LB  오의"
 			var ready_x := 178.0 if i == 0 else 802.0
 			var ready_align := HORIZONTAL_ALIGNMENT_LEFT if i == 0 else HORIZONTAL_ALIGNMENT_RIGHT
-			draw_string(f, Vector2(ready_x, 113), ready_text, ready_align, 300, 16, UiKit.SEAL)
+			draw_string(f, Vector2(ready_x, READY_BASELINE_Y), ready_text, ready_align, 300, 16, UiKit.SEAL)
 	# 라운드 점
 	for i in 2:
 		for k in 2:
@@ -138,7 +149,7 @@ func _draw() -> void:
 		if _combo_a[i] > 0.0 and _combo[i] >= 2:
 			var a := minf(_combo_a[i], 1.0)
 			var x := 80.0 if i == 1 else 1050.0
-			draw_string(f, Vector2(x, 170), str(_combo[i]) + " 연격", HORIZONTAL_ALIGNMENT_LEFT, -1, 34, Color(UiKit.SEAL, a))
+			draw_string(f, Vector2(x, CALLOUT_ROLE_BASELINE_Y), str(_combo[i]) + " 연격", HORIZONTAL_ALIGNMENT_LEFT, -1, 34, Color(UiKit.SEAL, a))
 	# 중·강·고유 기술의 이름과 용도를 짧게 보여 입력 차이를 학습시킨다.
 	for i in 2:
 		if _move_a[i] <= 0.0:
@@ -147,8 +158,8 @@ func _draw() -> void:
 		var mx := 62.0 if i == 0 else 718.0
 		var align := HORIZONTAL_ALIGNMENT_LEFT if i == 0 else HORIZONTAL_ALIGNMENT_RIGHT
 		var col := UiKit.SEAL if _move_kind[i] == "heavy" or _move_kind[i] == "super" else UiKit.INK
-		draw_string(f, Vector2(mx, 148), _move_name[i], align, 500, 20, Color(col, ma))
-		draw_string(f, Vector2(mx, 170), _move_role[i], align, 500, 14, Color(UiKit.GRAY, ma))
+		draw_string(f, Vector2(mx, CALLOUT_NAME_BASELINE_Y), _move_name[i], align, 500, 20, Color(col, ma))
+		draw_string(f, Vector2(mx, CALLOUT_ROLE_BASELINE_Y), _move_role[i], align, 500, 14, Color(UiKit.GRAY, ma))
 	# 배너 띠
 	if banner_label.text != "":
 		draw_rect(Rect2(240, 255, 800, 104), Color(UiKit.PAPER_LIGHT, 0.75))
