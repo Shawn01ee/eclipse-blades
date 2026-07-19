@@ -33,19 +33,27 @@ var size_percent := 100
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE   # _input 에서 직접 처리
-	var layout := layout_for_size(size_percent)
+	get_viewport().size_changed.connect(_sync_layout)
+	_sync_layout()
+
+
+func _sync_layout() -> void:
+	var layout := layout_for_size(size_percent, get_viewport_rect().size)
 	_ui_scale = layout["scale"]
 	joy_radius = layout["joy_radius"]
 	joy_center = layout["joy_center"]
 	pause_rect = layout["pause_rect"]
 	buttons = layout["buttons"]
+	queue_redraw()
 
 
 ## 우측 공격 버튼과 조이스틱을 iPhone 가로 노치/홈 인디케이터 안쪽에 배치한다.
-static func layout_for_size(percent: int) -> Dictionary:
+static func layout_for_size(percent: int, viewport_size := Vector2(1280, 720)) -> Dictionary:
 	var scale := clampf(float(percent) / 100.0, 0.85, 1.2)
 	var jr := 92.0 * scale
 	var r := 54.0 * scale
+	# 16:9보다 넓은 화면에서는 중앙 콘텐츠 여백만큼 우측 조작을 화면 끝으로 붙인다.
+	var attack_shift := maxf((viewport_size.x - 1280.0) * 0.5, 0.0)
 	return {
 		"scale": scale,
 		"joy_radius": jr,
@@ -53,11 +61,11 @@ static func layout_for_size(percent: int) -> Dictionary:
 		"pause_rect": Rect2(608, 94, 64, 50),
 		"buttons": {
 			# 최대 120%에서도 원과 터치 판정이 겹치지 않는 2단 배열.
-			"light": {"c": Vector2(880, 600), "r": r, "action": "p1_light", "label": "약", "col": UiKit.INK},
-			"medium": {"c": Vector2(1022, 600), "r": r, "action": "p1_medium", "label": "중", "col": UiKit.INK},
-			"heavy": {"c": Vector2(1162, 600), "r": r + 3.0 * scale, "action": "p1_heavy", "label": "강", "col": UiKit.INK},
-			"tech": {"c": Vector2(950, 452), "r": r - 3.0 * scale, "action": "p1_tech", "label": "기", "col": UiKit.GRAY},
-			"super": {"c": Vector2(1092, 452), "r": r - 3.0 * scale, "action": "p1_super", "label": "오의", "col": UiKit.SEAL},
+			"light": {"c": Vector2(880 + attack_shift, 600), "r": r, "action": "p1_light", "label": "약", "col": UiKit.INK},
+			"medium": {"c": Vector2(1022 + attack_shift, 600), "r": r, "action": "p1_medium", "label": "중", "col": UiKit.INK},
+			"heavy": {"c": Vector2(1162 + attack_shift, 600), "r": r + 3.0 * scale, "action": "p1_heavy", "label": "강", "col": UiKit.INK},
+			"tech": {"c": Vector2(950 + attack_shift, 452), "r": r - 3.0 * scale, "action": "p1_tech", "label": "기", "col": UiKit.GRAY},
+			"super": {"c": Vector2(1092 + attack_shift, 452), "r": r - 3.0 * scale, "action": "p1_super", "label": "오의", "col": UiKit.SEAL},
 		},
 	}
 

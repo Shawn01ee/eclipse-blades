@@ -99,6 +99,10 @@ static func run(t, _args: Dictionary) -> void:
 		attacks_safe = attacks_safe and center.x + radius <= 1232.0 \
 				and center.y + radius <= 672.0
 	t.ok(attacks_safe, "최대 크기 공격 버튼 노치·홈 인디케이터 여백")
+	var wide_layout := TouchControls.layout_for_size(100, Vector2(1558, 720))
+	var wide_heavy: Dictionary = wide_layout["buttons"]["heavy"]
+	t.eq(wide_heavy["c"].x, 1301.0,
+			"긴 모바일 화면에서 공격 버튼 묶음을 우측 확장 영역으로 이동")
 	var attacks_separated := true
 	for i in attack_buttons.size():
 		for j in range(i + 1, attack_buttons.size()):
