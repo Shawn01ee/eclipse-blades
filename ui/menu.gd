@@ -3,6 +3,10 @@ extends Control
 
 const Responsive := preload("res://ui/responsive_layout.gd")
 
+const MODE_PANEL_RECT := Rect2(320, 348, 640, 270)
+const MODE_CARD_SIZE := Vector2(304, 76)
+const UTILITY_BUTTON_SIZE := Vector2(304, 46)
+
 var keyart: Texture2D = null
 
 
@@ -18,31 +22,77 @@ func _ready() -> void:
 				keyart = ImageTexture.create_from_image(img)
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	var v := VBoxContainer.new()
-	# 타이틀 띠(218~340)와 메뉴 영역(360~616)을 완전히 분리한다.
-	v.position = Vector2(450, 360)
-	v.size = Vector2(380, 256)
-	v.custom_minimum_size = Vector2(380, 0)
-	v.alignment = BoxContainer.ALIGNMENT_CENTER
-	v.add_theme_constant_override("separation", 0)
+	# 플레이 모드는 2×2 카드, 설정/종료는 작은 보조 메뉴로 분리한다.
+	v.position = MODE_PANEL_RECT.position + Vector2(10, 6)
+	v.size = MODE_PANEL_RECT.size - Vector2(20, 12)
+	v.custom_minimum_size = Vector2(620, 0)
+	v.add_theme_constant_override("separation", 9)
 	add_child(v)
 
-	var buttons := [
-		["온라인 대전", func(): _online()],
-		["대전 — 2인", func(): _start(GameState.Mode.VS_2P)],
-		["대전 — CPU", func(): _start(GameState.Mode.VS_CPU)],
-		["훈련", func(): _start(GameState.Mode.TRAINING)],
-		["설정", func(): GameState.goto("settings")],
-		["종료", func(): get_tree().quit()],
+	var heading := UiKit.label("대전 방식 선택", 17, UiKit.GRAY)
+	heading.custom_minimum_size = Vector2(620, 20)
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(heading)
+
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.custom_minimum_size = Vector2(620, 162)
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 10)
+	v.add_child(grid)
+	var modes := [
+		["온라인 대전", "방 코드로 친구와 대전", func(): _online()],
+		["CPU 대전", "CPU 검객과 대전", func(): _start(GameState.Mode.VS_CPU)],
+		["2인 대전", "한 기기에서 마주 대전", func(): _start(GameState.Mode.VS_2P)],
+		["훈련", "기술과 연계를 연습하기", func(): _start(GameState.Mode.TRAINING)],
 	]
 	var first: Button = null
-	for b in buttons:
-		var btn := UiKit.button(b[0])
-		btn.pressed.connect(b[1])
+	for mode in modes:
+		var btn := _mode_button(mode[0], mode[1])
+		btn.pressed.connect(mode[2])
 		btn.focus_entered.connect(func(): AudioManager.play("ui_move"))
-		v.add_child(btn)
+		grid.add_child(btn)
 		if first == null:
 			first = btn
+
+	var utility := HBoxContainer.new()
+	utility.add_theme_constant_override("separation", 12)
+	v.add_child(utility)
+	var settings := UiKit.button("설정", 19)
+	settings.custom_minimum_size = UTILITY_BUTTON_SIZE
+	settings.pressed.connect(func(): GameState.goto("settings"))
+	utility.add_child(settings)
+	var quit := UiKit.button("종료", 19)
+	quit.custom_minimum_size = UTILITY_BUTTON_SIZE
+	quit.pressed.connect(func(): get_tree().quit())
+	utility.add_child(quit)
 	first.grab_focus()
+
+
+func _mode_button(title: String, subtitle: String) -> Button:
+	var button := UiKit.button(title + "\n" + subtitle, 20)
+	button.custom_minimum_size = MODE_CARD_SIZE
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(UiKit.PAPER_LIGHT, 0.78)
+	normal.border_color = UiKit.INK_FAINT
+	normal.set_border_width_all(1)
+	normal.border_width_left = 4
+	normal.set_corner_radius_all(2)
+	normal.content_margin_left = 18
+	normal.content_margin_right = 14
+	normal.content_margin_top = 8
+	normal.content_margin_bottom = 8
+	var active: StyleBoxFlat = normal.duplicate()
+	active.bg_color = Color(UiKit.PAPER_LIGHT, 0.94)
+	active.border_color = UiKit.SEAL
+	active.border_width_left = 6
+	active.border_width_bottom = 3
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", active)
+	button.add_theme_stylebox_override("focus", active)
+	button.add_theme_stylebox_override("pressed", active)
+	return button
 
 
 func _online() -> void:
@@ -71,8 +121,9 @@ func _draw() -> void:
 		draw_rect(Rect2(340, 218, 600, 122), Color(UiKit.PAPER_LIGHT, 0.82))
 		draw_rect(Rect2(340, 218, 600, 3), UiKit.INK)
 		draw_rect(Rect2(340, 337, 600, 3), UiKit.INK)
-		# 버튼 배경 띠
-		draw_rect(Rect2(450, 356, 380, 260), Color(UiKit.PAPER_LIGHT, 0.72))
+		# 모드 카드 배경 띠
+		draw_rect(MODE_PANEL_RECT, Color(UiKit.PAPER_LIGHT, 0.70))
+		draw_rect(Rect2(MODE_PANEL_RECT.position, Vector2(MODE_PANEL_RECT.size.x, 2)), UiKit.INK_FAINT)
 	else:
 		for k in 14:
 			UiKit.dry_stroke(self, Vector2(60, 60 + k * 46.0), 1160, UiKit.INK_FAINT, 100 + k)
