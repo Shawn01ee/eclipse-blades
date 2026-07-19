@@ -251,6 +251,14 @@ func _draw_signature(sp: Dictionary, t: float, fade: float) -> void:
 
 		"han":
 			# 하야테: 쌍검이 남기는 두 개의 빠른 평행 궤적.
+			# 파고들기는 몸 뒤로 짧은 잔상을 남겨 진입·이탈 대시임을 즉시 읽게 한다.
+			if slot == "tech":
+				for ghost in 3:
+					var ghost_center := base - along * (20.0 + ghost * 17.0)
+					var ghost_alpha := alpha * (0.30 - ghost * 0.07)
+					draw_line(ghost_center - normal * (16.0 - ghost * 2.0),
+							ghost_center + normal * (16.0 - ghost * 2.0),
+							Color(UiKit.INK, ghost_alpha), 4.0 - ghost * 0.7, true)
 			var gap := 7.0 + strength * 4.0
 			for side in [-1.0, 1.0]:
 				var off: Vector2 = normal * gap * side

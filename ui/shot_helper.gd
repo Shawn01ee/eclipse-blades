@@ -91,6 +91,16 @@ func _build_scenario(world) -> void:
 					"kendo_super": SimC.B_SUPER}.get(scenario, SimC.B_L)
 			for i in 90:
 				match_screen.replay_words.append([button if i == 0 else 0, 0])
+		"han_dash_hit":
+			world.debug_set_x(0, 0)
+			world.debug_set_x(1, 132)
+			for i in 70:
+				match_screen.replay_words.append([SimC.B_T if i == 0 else 0, 0])
+		"han_dash_retreat":
+			world.debug_set_x(0, -260)
+			world.debug_set_x(1, 260)
+			for i in 70:
+				match_screen.replay_words.append([SimC.B_T if i == 0 else 0, 0])
 		"mujin_nerve":
 			# 무진의 사맥 강화 파도 연계. 커맨드·자원 소비·활성 칼 판정을 한 화면에 검수한다.
 			world.debug_set_x(0, -155)
@@ -136,6 +146,10 @@ func _scenario_ready(world) -> bool:
 			return world.s["p"][1]["state"] == SimC.ST_HITSTUN
 		"kendo_light", "kendo_medium", "kendo_heavy", "kendo_tech", "kendo_super":
 			return world.s["p"][1]["state"] == SimC.ST_HITSTUN
+		"han_dash_hit":
+			return world.s["p"][1]["state"] == SimC.ST_HITSTUN
+		"han_dash_retreat":
+			return world.s["p"][0]["move"] == "han_tech" and world.s["p"][0]["st_f"] >= 11
 		"mujin_nerve":
 			return world.s["p"][0]["move"] == "mujin_motion_nerve" \
 				and world.s["p"][0]["state"] == SimC.ST_ATTACK \

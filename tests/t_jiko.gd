@@ -20,6 +20,12 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(fds[5].moves["heavy"].hitboxes_by_frame[0][3] \
 			> fds[5].moves["medium"].hitboxes_by_frame[0][3],
 			"머리치기 판정이 허리치기보다 높은 부위를 노림")
+	t.eq(fds[5].moves["heavy"].hitboxes_by_frame[0][2] \
+				+ fds[5].moves["heavy"].hitboxes_by_frame[0][4], 150,
+			"머리치기 전방 사거리 150px")
+	t.eq(fds[5].moves["tech"].hitboxes_by_frame[0][2] \
+				+ fds[5].moves["tech"].hitboxes_by_frame[0][4], 162,
+			"중단 찌르기 전방 사거리 162px")
 	var fx_source := FileAccess.get_file_as_string("res://ui/fx_layer.gd")
 	var match_source := FileAccess.get_file_as_string("res://ui/match_screen.gd")
 	t.ok(fx_source.contains("func _draw_shinai_contact") \
