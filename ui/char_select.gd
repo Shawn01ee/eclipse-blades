@@ -10,7 +10,9 @@ var cpu_level := 2
 var cards: Array = []
 var prompt: Label
 var diff_label: Label
+var touch_bar: HBoxContainer
 var _portraits := {}
+var _last_card_touch_ms := -1000
 
 
 func _ready() -> void:
@@ -37,7 +39,10 @@ func _ready() -> void:
 		var card := PanelContainer.new()
 		card.custom_minimum_size = Vector2(card_w, card_h)
 		card.add_theme_stylebox_override("panel", UiKit.panel_box())
+		card.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		card.gui_input.connect(_on_card_input.bind(k))
 		var v := VBoxContainer.new()
+		v.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		card.add_child(v)
 		var tex := _portrait(fd.id)
 		if tex != null:
@@ -46,20 +51,25 @@ func _ready() -> void:
 			tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 			tr.clip_contents = true
+			tr.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			tr.custom_minimum_size = Vector2(card_w - 40, img_h)
 			v.add_child(tr)
 		else:
 			var ph := ColorRect.new()
 			ph.color = Color(fd.color, 0.9) if fd.color.v < 0.5 else Color(UiKit.GRAY, 0.35)
+			ph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			ph.custom_minimum_size = Vector2(card_w - 40, img_h)
 			v.add_child(ph)
 		var name_l := UiKit.label(fd.display_name, 30)
+		name_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		name_l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		v.add_child(name_l)
 		var wname := UiKit.label(fd.weapon_name, 17, UiKit.SEAL)
+		wname.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		wname.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		v.add_child(wname)
 		var wep := UiKit.label(fd.style_note, 13, UiKit.GRAY)
+		wep.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		wep.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		wep.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		wep.max_lines_visible = 2
@@ -78,6 +88,65 @@ func _ready() -> void:
 	prompt.size = Vector2(1280, 40)
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(prompt)
+
+	# CPU 난이도와 시작을 키보드 없이 마칠 수 있는 하단 터치 바.
+	touch_bar = HBoxContainer.new()
+	touch_bar.position = Vector2(356, 590)
+	touch_bar.size = Vector2(568, 58)
+	touch_bar.add_theme_constant_override("separation", 8)
+	add_child(touch_bar)
+	_add_touch_button("◀ 난이도", func(): _change_cpu(-1), 130)
+	_add_touch_button("시작", _start, 150)
+	_add_touch_button("난이도 ▶", func(): _change_cpu(1), 130)
+	_add_touch_button("뒤로", _back_step, 130)
+	_refresh()
+
+
+func _add_touch_button(text: String, callback: Callable, width: int) -> void:
+	var button := UiKit.button(text, 21)
+	button.custom_minimum_size = Vector2(width, 56)
+	button.pressed.connect(callback)
+	touch_bar.add_child(button)
+
+
+func _on_card_input(event: InputEvent, index: int) -> void:
+	# Web에서 한 손가락 입력 뒤 호환 MouseButton이 한 번 더 올 수 있다.
+	# 같은 탭이 P1과 상대를 동시에 확정하지 않도록 후속 마우스 이벤트를 버린다.
+	if event is InputEventScreenTouch:
+		if not event.pressed:
+			return
+		_last_card_touch_ms = Time.get_ticks_msec()
+	elif event is InputEventMouseButton:
+		if event.button_index != MOUSE_BUTTON_LEFT or not event.pressed \
+				or Time.get_ticks_msec() - _last_card_touch_ms < 500:
+			return
+	else:
+		return
+	get_viewport().set_input_as_handled()
+	AudioManager.play("ui_ok")
+	if step == 0:
+		p1_sel = index
+		step = 1
+	elif step == 1:
+		p2_sel = index
+		if GameState.mode == GameState.Mode.VS_2P:
+			_start()
+			return
+		step = 2
+	else:
+		return
+	_refresh()
+
+
+func _change_cpu(delta: int) -> void:
+	cpu_level = clampi(cpu_level + delta, 1, 4)
+	AudioManager.play("ui_move")
+	_refresh()
+
+
+func _back_step() -> void:
+	step = maxi(step - 1, 0)
+	AudioManager.play("ui_move")
 	_refresh()
 
 
@@ -126,16 +195,17 @@ func _refresh() -> void:
 		diff_label.text = "중: %s · 강: %s · 기술: %s" % [sm.role_note, sh.role_note, st.role_note]
 	match step:
 		0:
-			prompt.text = "P1 — ←→ 선택 · A 확정 · ESC 뒤로"
+			prompt.text = "검객을 터치해 P1 선택 · ←→ 선택 · A 확정"
 		1:
 			if GameState.mode == GameState.Mode.VS_2P:
-				prompt.text = "P2 — J/L 선택 · U 확정 · O 뒤로"
+				prompt.text = "검객을 터치해 P2 선택 · J/L 선택 · U 확정"
 			else:
-				prompt.text = "상대 선택 — ←→ 선택 · A 확정 · D 뒤로"
+				prompt.text = "상대를 터치해 선택 · ←→ 선택 · A 확정"
 		2:
-			prompt.text = "←→ 난이도 조절 · A 시작 · D 뒤로"
+			prompt.text = ""
 		_:
 			prompt.text = ""
+	touch_bar.visible = step == 2 and is_cpu
 	queue_redraw()
 
 

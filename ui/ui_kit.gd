@@ -24,6 +24,9 @@ static func label(text: String, size: int = 22, color: Color = INK) -> Label:
 static func button(text: String, size: int = 26) -> Button:
 	var b := Button.new()
 	b.text = text
+	# iOS Safari의 첫 제스처는 오디오 컨텍스트 활성화와 겹쳐 touchend가 유실될 수 있다.
+	# release가 아니라 touchstart/mousedown 시점에 실행해 첫 터치부터 반응시킨다.
+	b.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 	b.add_theme_font_size_override("font_size", size)
 	b.add_theme_color_override("font_color", INK)
 	b.add_theme_color_override("font_hover_color", SEAL)

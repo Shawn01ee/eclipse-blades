@@ -18,6 +18,8 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(load("res://fonts/NotoSansKR-Game.ttf") is Font, "웹 한글 폰트 리소스 로드")
 	t.eq(ProjectSettings.get_setting("display/window/handheld/orientation"), "landscape",
 			"모바일 가로 방향 선언")
+	t.eq(ProjectSettings.get_setting("input_devices/pointing/emulate_mouse_from_touch"), false,
+			"모바일 터치가 호환 마우스를 거쳐 중복 입력되지 않음")
 
 	var preset_file := FileAccess.open("res://export_presets.cfg", FileAccess.READ)
 	var preset := preset_file.get_as_text() if preset_file != null else ""
@@ -33,6 +35,17 @@ static func run(t, _args: Dictionary) -> void:
 	var main_source := main_file.get_as_text() if main_file != null else ""
 	t.ok(main_source.contains("screen_theme.default_font = ThemeDB.fallback_font"),
 			"웹 Control 전체에 내장 한글 폰트 상속")
+	var kit_file := FileAccess.open("res://ui/ui_kit.gd", FileAccess.READ)
+	var kit_source := kit_file.get_as_text() if kit_file != null else ""
+	t.ok(kit_source.contains("ACTION_MODE_BUTTON_PRESS"), "iOS 첫 터치에서 버튼 즉시 실행")
+	var select_file := FileAccess.open("res://ui/char_select.gd", FileAccess.READ)
+	var select_source := select_file.get_as_text() if select_file != null else ""
+	t.ok(select_source.contains("event is InputEventScreenTouch") \
+			and select_source.contains("_last_card_touch_ms < 500"),
+			"캐릭터 카드 ScreenTouch 입력·호환 마우스 중복 방지")
+	t.ok(select_source.contains("card.gui_input.connect(_on_card_input.bind(k))") \
+			and select_source.contains("touch_bar.visible = step == 2"),
+			"캐릭터 카드·난이도·시작 터치 경로 연결")
 
 	var layout := TouchControls.layout_for_size(120)
 	var joy_center: Vector2 = layout["joy_center"]

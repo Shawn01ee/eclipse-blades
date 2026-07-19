@@ -15,7 +15,7 @@
 # 게임
 godot --path .
 
-# 테스트 (201건)
+# 테스트 (205건)
 godot --headless --path . --script res://tests/run_tests.gd
 
 # 소크 100경기
