@@ -22,6 +22,7 @@ const SUITES := [
 	preload("res://tests/t_mobile_web.gd"),
 	preload("res://tests/t_online.gd"),
 	preload("res://tests/t_character_identity.gd"),
+	preload("res://tests/t_han.gd"),
 	preload("res://tests/t_signature_fx.gd"),
 	preload("res://tests/t_mujin.gd"),
 	preload("res://tests/t_jiko.gd"),

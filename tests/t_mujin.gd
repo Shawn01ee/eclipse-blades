@@ -13,8 +13,8 @@ static func run(t, _args: Dictionary) -> void:
 	t.eq(w.chars[0]["moves"].size(), 11, "무진 기본 7개 + 파도 연계 4개")
 	t.ok(w.chars[0]["hp"] > w.chars[1]["hp"] and w.chars[0]["walk_f"] < w.chars[1]["walk_f"],
 			"높은 체력·느린 보행의 중량 역할")
-	t.ok(w.chars[0]["moves"]["heavy"]["dmg"] >= 330 \
-			and w.chars[0]["moves"]["heavy"]["stop"] >= 15, "강공격 단발 피해·히트스톱")
+	t.ok(w.chars[0]["moves"]["heavy"]["dmg"] >= 300 \
+			and w.chars[0]["moves"]["heavy"]["stop"] >= 15, "조율 후에도 최고급 강공격 피해·히트스톱")
 
 	w.debug_set_x(0, -450)
 	w.debug_set_x(1, 450)

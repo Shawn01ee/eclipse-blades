@@ -57,11 +57,33 @@ static func run(t, _args: Dictionary) -> void:
 	var guardrails := true
 	for fighter in baked:
 		var hv: Dictionary = fighter["moves"]["heavy"]
-		guardrails = guardrails and hv["dmg"] >= 180 and hv["dmg"] <= 350 and hv["su"] >= 14
-	t.ok(guardrails, "전원 강공격 피해 180~350·발동 14f 이상")
+		guardrails = guardrails and hv["dmg"] >= 160 and hv["dmg"] <= 350 and hv["su"] >= 14
+	t.ok(guardrails, "전원 강공격 피해 160~350·발동 14f 이상")
 	t.ok(_reach(baked[3]["moves"]["heavy"]) > _reach(baked[1]["moves"]["heavy"]) \
 			and _reach(baked[1]["moves"]["medium"]) > _reach(baked[0]["moves"]["medium"]),
 			"카게로 초장거리 > 이와오 장거리 > 아야메 표준거리")
+
+	# 0.4.1 육검 조율의 핵심 수치가 후속 작업에서 실수로 되돌아가지 않게 고정한다.
+	t.ok(baked[0]["hp"] == 900 \
+			and baked[0]["moves"]["tech"]["su"] == 9 \
+			and baked[0]["moves"]["light"]["cancels"][0]["on"] == ["hit"],
+			"아야메는 낮은 체력·반응 가능한 발도·적중 전용 약 연계")
+	t.ok(baked[2]["hp"] == 975 \
+			and baked[2]["moves"]["tech"]["dmg"] == 30 \
+			and baked[2]["moves"]["tech"]["energy_cost"] == 50,
+			"하야테는 보강된 체력과 기력을 거는 저피해 파고들기")
+	t.ok(baked[3]["moves"]["medium"]["su"] == 11 \
+			and baked[3]["moves"]["heavy"]["su"] == 21 \
+			and baked[3]["moves"]["tech"]["su"] == 9,
+			"카게로 사슬 견제 발동 1프레임 개선")
+	t.ok(baked[4]["hp"] == 1125 \
+			and baked[4]["moves"]["medium"]["dmg"] == 155 \
+			and baked[4]["moves"]["heavy"]["dmg"] == 310,
+			"무진은 중량 정체성을 유지하며 체력·단발 피해 절제")
+	t.ok(baked[5]["hp"] == 1060 \
+			and baked[5]["moves"]["medium"]["dmg"] == 112 \
+			and baked[5]["moves"]["tech"]["dmg"] == 125,
+			"지코는 허리치기·중단 찌르기의 적중 보상 강화")
 
 	# 카게로 낚아채기는 수치 표기만이 아니라 실제로 상대를 공격자 쪽으로 당긴다.
 	var pullw := H.mk(3, 0, 303)

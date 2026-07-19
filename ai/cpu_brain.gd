@@ -14,7 +14,7 @@ const ERR_PROB := [35, 22, 12, 4, 1, 0]        # 무작위 행동 확률(%)
 const ANTI_AIR_PROB := [35, 45, 55, 76, 90, 98]
 const AIR_ATTACK_PROB := [25, 32, 40, 60, 76, 90]
 const SUPER_PROB := [22, 28, 35, 55, 72, 88]
-const HAN_CHAIN_PROB := [25, 35, 45, 72, 88, 98]
+const HAN_CHAIN_PROB := [16, 22, 28, 40, 52, 65]
 const ARIN_CHAIN_PROB := [20, 28, 35, 72, 88, 98]
 const ActionLibrary := preload("res://ai/cpu_action_library.gd")
 
@@ -90,6 +90,7 @@ func think(w: CombatWorld) -> int:
 					continue
 				var targets: Array = cw["targets"]
 				if w.chars[pi]["id"] == "han" and targets.has("han_tech") \
+						and _can_use_slot(w, me, "tech") \
 						and _roll(100) < HAN_CHAIN_PROB[level - 1]:
 					return SimC.B_T
 				if w.chars[pi]["id"] == "arin" \
@@ -196,8 +197,8 @@ func think(w: CombatWorld) -> int:
 			return _dir_word(-1, facing)
 
 	# 하야테는 짧은 단도 사거리 밖에서 파고들기로 중거리 벽을 넘는다.
-	if w.chars[pi]["id"] == "han" and gap > 105 and gap <= 195 \
-			and _can_use_slot(w, me, "tech") and _roll(100) < 38:
+	if w.chars[pi]["id"] == "han" and gap > 105 and gap <= 225 \
+			and _can_use_slot(w, me, "tech") and _roll(100) < 32:
 		return _start_action(ActionLibrary.Action.TECH, facing)
 
 	# 지코의 기술은 판정 좌표보다 먼저 물러났다 재돌진하므로 단순 히트박스 사거리로

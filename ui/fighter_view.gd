@@ -368,12 +368,21 @@ func _draw_rig(hh: float, hw: float) -> void:
 	var skirt_left_x := minf(pose["foot_front"].x, pose["foot_back"].x) - 7.0
 	var skirt_right_x := maxf(pose["foot_front"].x, pose["foot_back"].x) + 7.0
 	var skirt_y := maxf(pose["foot_front"].y, pose["foot_back"].y) - 5.0
-	var robe := PackedVector2Array([
-		pose["shoulder_back"] + Vector2(-5, 8), pose["shoulder_front"] + Vector2(7, 8),
-		pose["hip_front"] + Vector2(15, 7), Vector2(skirt_right_x, skirt_y),
-		Vector2(skirt_left_x, skirt_y), pose["hip_back"] + Vector2(-15, 7),
-	])
-	draw_polygon(robe, [cloth])
+	# 쓰러진 자세에서는 골반 안쪽 점이 치맛단 바깥으로 접히며 자체 교차할 수 있다.
+	# KO 실루엣은 외곽점만 시계 방향으로 이어 웹 렌더러의 삼각분할 실패를 막는다.
+	var robe: PackedVector2Array
+	if _st == SimC.ST_KO:
+		robe = PackedVector2Array([
+			pose["shoulder_back"] + Vector2(-5, 8), pose["shoulder_front"] + Vector2(7, 8),
+			Vector2(skirt_right_x, skirt_y), Vector2(skirt_left_x, skirt_y),
+		])
+	else:
+		robe = PackedVector2Array([
+			pose["shoulder_back"] + Vector2(-5, 8), pose["shoulder_front"] + Vector2(7, 8),
+			pose["hip_front"] + Vector2(15, 7), Vector2(skirt_right_x, skirt_y),
+			Vector2(skirt_left_x, skirt_y), pose["hip_back"] + Vector2(-15, 7),
+		])
+	_draw_safe_polygon(robe, [cloth])
 	var robe_line := robe.duplicate()
 	robe_line.append(robe[0])
 	draw_polyline(robe_line, UiKit.INK, 3.0)
@@ -621,7 +630,7 @@ func _draw_rig_weapon(grip: Vector2, tip: Vector2, active: bool) -> void:
 		var dir := tip - grip
 		var prev := grip + dir.rotated(-0.32) * 0.92
 		var sweep := PackedVector2Array([grip, prev, tip])
-		draw_polygon(sweep, [Color(UiKit.INK, 0.13)])
+		_draw_safe_polygon(sweep, [Color(UiKit.INK, 0.13)])
 	match weapon_kind:
 		"sword": _wp_blade(grip, tip, 4.5, edge_col, active)
 		"shinai": _wp_shinai(grip, tip, edge_col, active)
@@ -722,7 +731,7 @@ func _draw_ink(hh: float, hw: float) -> void:
 	var robe := PackedVector2Array([
 		Vector2(-hw * 0.72, -hh * 0.52), Vector2(hw * 0.78, -hh * 0.52),
 		Vector2(hw * 1.05, 0), Vector2(-hw * 1.15, 0)])
-	draw_polygon(robe, [fill])
+	_draw_safe_polygon(robe, [fill])
 	draw_polyline(robe, UiKit.INK, 2.5)
 	var torso := Rect2(-hw * 0.62, -hh * 0.9, hw * 1.3, hh * 0.42)
 	UiKit.brush_rect(self, torso, fill, idx * 100 + 3)
@@ -776,7 +785,7 @@ func _draw_strike(hh: float, hw: float) -> void:
 	# 활성 궤적(잔상) — 이번 스윙이 지나온 부채꼴
 	if active:
 		var swept := PackedVector2Array([grip, hi, (hi + tip) * 0.5, tip])
-		draw_polygon(swept, [Color(UiKit.INK, 0.16)])
+		_draw_safe_polygon(swept, [Color(UiKit.INK, 0.16)])
 
 	var edge_col := UiKit.SEAL if active else UiKit.INK   # 활성 중 칼끝에 핏빛
 	match weapon_kind:
@@ -816,7 +825,7 @@ func _wp_blade(grip: Vector2, tip: Vector2, w: float, edge_col: Color, active: b
 		point_base + perp * w * 0.18,
 		blade_base + perp * w * 0.60,
 	])
-	draw_polygon(outer, [UiKit.INK])
+	_draw_safe_polygon(outer, [UiKit.INK])
 	var inner_base := blade_base + dir * 2.0
 	var inner_tip := tip - dir * 1.6
 	var steel := PackedVector2Array([
@@ -826,7 +835,7 @@ func _wp_blade(grip: Vector2, tip: Vector2, w: float, edge_col: Color, active: b
 		point_base + perp * w * 0.04,
 		inner_base + perp * w * 0.28,
 	])
-	draw_polygon(steel, [Color(0.91, 0.90, 0.84)])
+	_draw_safe_polygon(steel, [Color(0.91, 0.90, 0.84)])
 
 	# 칼등은 어둡고 날은 얇고 밝게 분리한다. 활성 시 날 끝만 주홍으로 달아오른다.
 	draw_line(blade_base - perp * w * 0.72, point_base - perp * w * 0.36,
@@ -938,10 +947,18 @@ func _draw_sharp_cap(point: Vector2, approach: Vector2, width: float, fill: Colo
 	var base := point - dir * maxf(8.0, width * 1.8)
 	var outer := PackedVector2Array([base - perp * width * 0.72, point,
 			base + perp * width * 0.72])
-	draw_polygon(outer, [UiKit.INK])
+	_draw_safe_polygon(outer, [UiKit.INK])
 	var inner := PackedVector2Array([base - perp * width * 0.34, point - dir * 1.2,
 			base + perp * width * 0.28])
-	draw_polygon(inner, [fill])
+	_draw_safe_polygon(inner, [fill])
+
+
+func _draw_safe_polygon(points: PackedVector2Array, colors: PackedColorArray) -> void:
+	# 공격 궤적의 첫 프레임이나 쓰러진 자세에서 점이 겹치면 웹 렌더러가
+	# 빈 삼각형을 오류로 보고한다. 유효한 면이 있을 때만 CanvasItem에 넘긴다.
+	if points.size() < 3 or Geometry2D.triangulate_polygon(points).size() < 3:
+		return
+	draw_polygon(points, colors)
 
 
 func _draw_tip_glint(tip: Vector2, facing: float, alpha: float) -> void:

@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1784466762|1657296';
+const CACHE_VERSION = '1784472125|1448287';
 /** @type {string} */
 const CACHE_PREFIX = '일식검담 ECLIPSE BLA-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
@@ -23,7 +23,6 @@ const FULL_CACHE = CACHED_FILES.concat(CACHEABLE_FILES);
 self.addEventListener('install', (event) => {
 	event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CACHED_FILES)));
 });
-
 self.addEventListener('activate', (event) => {
 	event.waitUntil(caches.keys().then(
 		function (keys) {
