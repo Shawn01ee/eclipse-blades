@@ -52,11 +52,12 @@ static func layout_for_size(percent: int) -> Dictionary:
 		"joy_center": Vector2(SAFE_EDGE + jr, 720.0 - SAFE_EDGE - jr),
 		"pause_rect": Rect2(608, 94, 64, 50),
 		"buttons": {
-			"light": {"c": Vector2(970, 605), "r": r, "action": "p1_light", "label": "약", "col": UiKit.INK},
-			"medium": {"c": Vector2(1072, 574), "r": r, "action": "p1_medium", "label": "중", "col": UiKit.INK},
-			"heavy": {"c": Vector2(1160, 522), "r": r + 3.0 * scale, "action": "p1_heavy", "label": "강", "col": UiKit.INK},
-			"tech": {"c": Vector2(1008, 493), "r": r - 3.0 * scale, "action": "p1_tech", "label": "기", "col": UiKit.GRAY},
-			"super": {"c": Vector2(1108, 454), "r": r - 3.0 * scale, "action": "p1_super", "label": "오의", "col": UiKit.SEAL},
+			# 최대 120%에서도 원과 터치 판정이 겹치지 않는 2단 배열.
+			"light": {"c": Vector2(880, 600), "r": r, "action": "p1_light", "label": "약", "col": UiKit.INK},
+			"medium": {"c": Vector2(1022, 600), "r": r, "action": "p1_medium", "label": "중", "col": UiKit.INK},
+			"heavy": {"c": Vector2(1162, 600), "r": r + 3.0 * scale, "action": "p1_heavy", "label": "강", "col": UiKit.INK},
+			"tech": {"c": Vector2(950, 452), "r": r - 3.0 * scale, "action": "p1_tech", "label": "기", "col": UiKit.GRAY},
+			"super": {"c": Vector2(1092, 452), "r": r - 3.0 * scale, "action": "p1_super", "label": "오의", "col": UiKit.SEAL},
 		},
 	}
 
@@ -87,7 +88,7 @@ func _release(action: String) -> void:
 func _btn_at(pos: Vector2) -> String:
 	for name in buttons:
 		var b: Dictionary = buttons[name]
-		if pos.distance_to(b["c"]) <= b["r"] * 1.18:
+		if pos.distance_to(b["c"]) <= b["r"]:
 			return name
 	return ""
 

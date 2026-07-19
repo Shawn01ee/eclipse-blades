@@ -54,12 +54,21 @@ static func run(t, _args: Dictionary) -> void:
 			and 720.0 - (joy_center.y + joy_radius) >= 55.5
 	t.ok(joy_safe, "최대 크기 조이스틱 안전영역")
 	var attacks_safe := true
-	for b in layout["buttons"].values():
+	var attack_buttons: Array = layout["buttons"].values()
+	for b in attack_buttons:
 		var center: Vector2 = b["c"]
 		var radius: float = b["r"]
 		attacks_safe = attacks_safe and center.x + radius <= 1232.0 \
 				and center.y + radius <= 672.0
 	t.ok(attacks_safe, "최대 크기 공격 버튼 노치·홈 인디케이터 여백")
+	var attacks_separated := true
+	for i in attack_buttons.size():
+		for j in range(i + 1, attack_buttons.size()):
+			var a: Dictionary = attack_buttons[i]
+			var b: Dictionary = attack_buttons[j]
+			attacks_separated = attacks_separated \
+					and a["c"].distance_to(b["c"]) >= a["r"] + b["r"] + 6.0
+	t.ok(attacks_separated, "최대 크기 공격 버튼과 터치 판정 사이 최소 6px 간격")
 	var pause_rect: Rect2 = layout["pause_rect"]
 	t.ok(pause_rect.position.x >= 600.0 and pause_rect.end.x <= 680.0 \
 			and pause_rect.position.y >= 88.0, "일시정지 버튼이 캐릭터 이름·체력바와 분리")
