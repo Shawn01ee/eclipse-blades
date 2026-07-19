@@ -5,6 +5,7 @@ const SCREENS := {
 	"menu": preload("res://ui/menu.gd"),
 	"select": preload("res://ui/char_select.gd"),
 	"settings": preload("res://ui/settings_screen.gd"),
+	"online": preload("res://ui/online_lobby.gd"),
 	"match": preload("res://ui/match_screen.gd"),
 }
 const MobileGuard := preload("res://ui/mobile_guard.gd")
@@ -48,6 +49,8 @@ func _ready() -> void:
 
 func goto(screen: String) -> void:
 	get_tree().paused = false
+	if screen == "menu" and OnlineSession.status != "idle":
+		OnlineSession.disconnect_session()
 	AudioManager.play_bgm("battle" if screen == "match" else "menu")
 	if current:
 		current.queue_free()

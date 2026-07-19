@@ -24,6 +24,11 @@ boot_splash/fullsize=false
 SettingsManager="*res://autoload/settings_manager.gd"
 AudioManager="*res://autoload/audio_manager.gd"
 GameState="*res://autoload/game_state.gd"
+OnlineSession="*res://autoload/online_session.gd"
+
+[network]
+
+relay_url="wss://eclipse-blades-relay.eclipse-blades.workers.dev"
 
 [display]
 

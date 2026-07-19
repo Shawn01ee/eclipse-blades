@@ -15,7 +15,7 @@
 # 게임
 godot --path .
 
-# 테스트 (219건)
+# 테스트 (226건)
 godot --headless --path . --script res://tests/run_tests.gd
 
 # 소크 100경기
@@ -34,6 +34,26 @@ godot --headless --path . --script res://tests/run_tests.gd
 - 노치·홈 인디케이터를 피한 터치 조작을 제공하고 설정에서 표시 여부와 크기(85~120%)를 바꿀 수 있습니다.
 - 첫 실행에는 엔진(WASM)과 에셋을 내려받으며 설치는 필요 없습니다. 브라우저 정책상 첫 터치 뒤부터 소리가 납니다.
 - 웹 패키지에는 사용하지 않는 전투 스킨을 넣지 않고, 한글 글꼴은 실제 게임 문자를 추린 OFL Noto Sans KR을 포함합니다.
+
+## 온라인 대전
+
+- 메인 메뉴의 **온라인 대전**에서 새 방을 만들고 6자리 코드를 친구에게 전달합니다.
+- 두 사람이 각자 검객을 선택하고 준비하면 같은 시드로 동시에 시작합니다.
+- 게임 상태 전체를 전송하지 않고 60틱 조작 입력만 중계하며, 양쪽 입력이 모인 틱만 진행합니다.
+- 120틱마다 결정론적 상태 해시를 비교해 동기화 오류를 감지합니다.
+- 온라인에는 인터넷 연결이 필요하며 CPU·훈련은 기존처럼 오프라인에서 실행됩니다.
+
+실시간 중계 서버는 `online-server/`의 Cloudflare Worker + Durable Object입니다. 로컬 검증과 배포:
+
+```bash
+cd online-server
+npm install
+npm test
+npm run check
+npm run deploy
+```
+
+배포 후 `project.godot`의 `network/relay_url`에 발급된 `wss://...workers.dev` 주소를 넣고 웹 빌드를 다시 내보냅니다. 무료 플랜 제공량은 Cloudflare 정책에 따라 바뀔 수 있으므로 대시보드 사용량을 확인해야 합니다.
 
 ## 조작
 

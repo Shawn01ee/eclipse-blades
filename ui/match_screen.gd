@@ -37,6 +37,11 @@ var _dim: ColorRect
 var _dim_a := 0.0
 var _ended := false
 var _bgm_danger := false
+var _online_send_tick := 0
+var _online_sim_tick := 0
+
+const ONLINE_INPUT_LEAD := 8
+const ONLINE_MAX_CATCHUP := 3
 
 
 func _ready() -> void:
@@ -49,10 +54,14 @@ func _ready() -> void:
 	var fds := Registry.load_all()
 	var a: FighterData = fds[GameState.p1_char]
 	var b: FighterData = fds[GameState.p2_char]
-	match_seed = GameState.next_match_seed()
+	match_seed = OnlineSession.match_seed if GameState.mode == GameState.Mode.ONLINE else GameState.next_match_seed()
 	world = CombatWorld.new(Registry.bake(a), Registry.bake(b), match_seed)
-	if GameState.mode != GameState.Mode.VS_2P:
+	if GameState.mode in [GameState.Mode.VS_CPU, GameState.Mode.TRAINING]:
 		brain = CpuBrain.new(1, GameState.cpu_level, match_seed + 999)
+	if GameState.mode == GameState.Mode.ONLINE:
+		OnlineSession.peer_left.connect(_on_online_peer_left)
+		OnlineSession.desync_detected.connect(_on_online_desync)
+		OnlineSession.begin_play()
 
 	scene_root = Node2D.new()
 	add_child(scene_root)
@@ -89,7 +98,7 @@ func _ready() -> void:
 	_dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_dim.modulate.a = 0.0
 	add_child(_dim)
-	hud.banner("제 1 합", "준비", 1.5)
+	hud.banner("제 1 합", "온라인 대전" if GameState.mode == GameState.Mode.ONLINE else "준비", 1.5)
 	_sync_views()
 
 
@@ -97,6 +106,9 @@ func _ready() -> void:
 
 func _physics_process(_dt: float) -> void:
 	if get_tree().paused or _ended:
+		return
+	if GameState.mode == GameState.Mode.ONLINE:
+		_online_physics_frame()
 		return
 	var w1 := 0
 	var w2 := 0
@@ -117,6 +129,26 @@ func _physics_process(_dt: float) -> void:
 				w2 = brain.think(world)
 			GameState.Mode.TRAINING:
 				w2 = CpuBrain.dummy_word(dummy_mode, world, 1, brain)
+	_advance_world(w1, w2)
+
+
+func _online_physics_frame() -> void:
+	# 각 기기는 자기 캐릭터와 관계없이 P1 조작계를 사용한다. 서버의 slot이
+	# 입력을 월드 P1/P2 순서로 배치하므로 모바일에서도 같은 UI를 쓸 수 있다.
+	if _online_send_tick <= _online_sim_tick + ONLINE_INPUT_LEAD:
+		OnlineSession.submit_input(_online_send_tick, _read_word(1))
+		_online_send_tick += 1
+	var caught_up := 0
+	while OnlineSession.has_inputs(_online_sim_tick) and caught_up < ONLINE_MAX_CATCHUP:
+		var pair := OnlineSession.take_inputs(_online_sim_tick)
+		_advance_world(int(pair[0]), int(pair[1]))
+		_online_sim_tick += 1
+		caught_up += 1
+		if _online_sim_tick % 120 == 0:
+			OnlineSession.send_hash(_online_sim_tick, world.state_hash())
+
+
+func _advance_world(w1: int, w2: int) -> void:
 	recording.append([w1, w2])
 	var evs := world.step(w1, w2)
 	for e in evs:
@@ -479,12 +511,16 @@ func _toggle_pause() -> void:
 		get_tree().paused = true
 		if touch:
 			touch._release_all()
-		pause_panel = _make_panel("멈춤", [
-			["계속", _toggle_pause],
-			["경기 재시작", _restart_match],
-			["캐릭터 선택", _goto_select],
-			["메인 메뉴", _goto_menu],
-		], _controls_text())
+		var buttons := [["계속", _toggle_pause]]
+		if GameState.mode == GameState.Mode.ONLINE:
+			buttons.append(["온라인 대전 나가기", _goto_menu])
+		else:
+			buttons.append_array([
+				["경기 재시작", _restart_match],
+				["캐릭터 선택", _goto_select],
+				["메인 메뉴", _goto_menu],
+			])
+		pause_panel = _make_panel("멈춤", buttons, _controls_text())
 
 
 func _restart_match() -> void:
@@ -497,7 +533,14 @@ func _goto_select() -> void:
 
 
 func _goto_menu() -> void:
+	if GameState.mode == GameState.Mode.ONLINE:
+		OnlineSession.disconnect_session()
 	GameState.goto("menu")
+
+
+func _goto_online() -> void:
+	OnlineSession.disconnect_session()
+	GameState.goto("online")
 
 
 func _show_results() -> void:
@@ -507,11 +550,42 @@ func _show_results() -> void:
 	var winner: int = world.s["winner"]
 	if winner == 0 or winner == 1:
 		text = "승리 — " + world.chars[winner]["name"]
-	results_panel = _make_panel(text, [
-		["재경기", _restart_match],
-		["캐릭터 선택", _goto_select],
+	if GameState.mode == GameState.Mode.ONLINE:
+		results_panel = _make_panel(text, [
+			["온라인 방 만들기", _goto_online],
+			["메인 메뉴", _goto_menu],
+		], "")
+	else:
+		results_panel = _make_panel(text, [
+			["재경기", _restart_match],
+			["캐릭터 선택", _goto_select],
+			["메인 메뉴", _goto_menu],
+		], "")
+
+
+func _on_online_peer_left() -> void:
+	if _ended:
+		return
+	_ended = true
+	if touch:
+		touch._release_all()
+	hud.banner("연결 종료", "상대가 방을 나갔습니다", 2.0)
+	results_panel = _make_panel("상대 연결 종료", [
+		["온라인 방 만들기", _goto_online],
 		["메인 메뉴", _goto_menu],
 	], "")
+
+
+func _on_online_desync(tick: int) -> void:
+	if _ended:
+		return
+	_ended = true
+	if touch:
+		touch._release_all()
+	results_panel = _make_panel("동기화 오류", [
+		["온라인 방 만들기", _goto_online],
+		["메인 메뉴", _goto_menu],
+	], "틱 %d에서 두 기기의 상태가 달라졌습니다." % tick)
 
 
 func _make_panel(title: String, buttons: Array, foot: String) -> PanelContainer:
@@ -550,4 +624,6 @@ func _make_panel(title: String, buttons: Array, foot: String) -> PanelContainer:
 
 
 func _controls_text() -> String:
+	if GameState.mode == GameState.Mode.ONLINE:
+		return "온라인에서는 두 플레이어 모두 P1 조작 사용\n이동 ←→ · 약 A · 중 S · 강 D · 기술 A+S · 오의 Q\n잡기 →+중(근접) · 정밀방어 피격 직전 3f 내 뒤 · 오의 사맥 3"
 	return "P1  이동 ←→ · 약 A · 중 S · 강 D · 기술 A+S · 오의 Q\nP2  이동 J/L · 약 U · 중 I · 강 O · 기술 U+I · 오의 P\n중=핵심 견제/연계 · 강=느린 고위험 결정타 · 기술=캐릭터 고유 전술\n잡기 →+중(근접) · 정밀방어 피격 직전 3f 내 뒤 · 오의 사맥 3"

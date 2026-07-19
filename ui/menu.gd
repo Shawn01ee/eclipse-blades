@@ -27,6 +27,7 @@ func _ready() -> void:
 	add_child(v)
 
 	var buttons := [
+		["온라인 대전", func(): _online()],
 		["대전 — 2인", func(): _start(GameState.Mode.VS_2P)],
 		["대전 — CPU", func(): _start(GameState.Mode.VS_CPU)],
 		["훈련", func(): _start(GameState.Mode.TRAINING)],
@@ -42,6 +43,11 @@ func _ready() -> void:
 		if first == null:
 			first = btn
 	first.grab_focus()
+
+
+func _online() -> void:
+	AudioManager.play("ui_ok")
+	GameState.goto("online")
 
 
 func _start(mode: int) -> void:

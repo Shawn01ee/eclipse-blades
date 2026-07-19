@@ -1,7 +1,7 @@
 extends Node
 ## 화면 간 공유 상태 (경기 설정 등). 시뮬 결정론과 무관한 셸 레이어.
 
-enum Mode { VS_2P, VS_CPU, TRAINING }
+enum Mode { VS_2P, VS_CPU, TRAINING, ONLINE }
 
 var mode: int = Mode.VS_CPU
 var p1_char := 0
