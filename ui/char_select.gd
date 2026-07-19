@@ -139,7 +139,7 @@ func _on_card_input(event: InputEvent, index: int) -> void:
 
 
 func _change_cpu(delta: int) -> void:
-	cpu_level = clampi(cpu_level + delta, 1, 4)
+	cpu_level = clampi(cpu_level + delta, 1, CpuBrain.MAX_LEVEL)
 	AudioManager.play("ui_move")
 	_refresh()
 
@@ -186,8 +186,10 @@ func _refresh() -> void:
 		cards[k].add_theme_stylebox_override("panel", sb)
 	var is_cpu := GameState.mode != GameState.Mode.VS_2P
 	if step == 2 and is_cpu:
-		diff_label.text = "CPU 난이도  ◀ %d ▶" % cpu_level
+		diff_label.text = "CPU 난이도  ◀ %d / %d ▶" % [cpu_level, CpuBrain.MAX_LEVEL]
+		diff_label.add_theme_color_override("font_color", UiKit.SEAL if cpu_level >= 4 else UiKit.INK)
 	else:
+		diff_label.add_theme_color_override("font_color", UiKit.INK)
 		var selected: int = p1_sel if step == 0 else p2_sel
 		var sm: MoveData = fds[selected].moves["medium"]
 		var sh: MoveData = fds[selected].moves["heavy"]
@@ -242,7 +244,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				cpu_level = maxi(cpu_level - 1, 1)
 				AudioManager.play("ui_move")
 			elif event.is_action_pressed("p1_right"):
-				cpu_level = mini(cpu_level + 1, 4)
+				cpu_level = mini(cpu_level + 1, CpuBrain.MAX_LEVEL)
 				AudioManager.play("ui_move")
 			elif event.is_action_pressed("p1_light"):
 				AudioManager.play("ui_ok")

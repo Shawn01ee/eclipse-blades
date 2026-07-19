@@ -2,13 +2,20 @@ class_name CpuBrain
 extends RefCounted
 ## 읽기 쉬운 Utility CPU (기획서 §7).
 ## - 관찰: 거리, 상대 상태(공개 정보), 체력, 사맥
-## - 난이도는 반응 지연·오차·후보 빈도만 바꾼다
+## - 난이도는 반응 지연·오차·후보 빈도·확정 상황 대응을 바꾼다
 ## - 플레이어 "입력"을 읽지 않는다: 화면에 보이는 상태(발동 모션)에만 지연 반응
 ## - 자체 시드 난수만 사용 → 같은 시드·같은 상태 = 같은 행동 (결정론 유지)
 
-const CADENCE := [16, 12, 8, 5]        # 난이도별 재판단 주기
-const BLOCK_PROB := [15, 35, 60, 85]   # 공격 목격 시 가드 확률(%)
-const ERR_PROB := [35, 22, 12, 5]      # 무작위 행동 확률(%)
+const MAX_LEVEL := 6
+const CADENCE := [16, 12, 8, 4, 2, 1]          # 난이도별 재판단 주기
+const REACT_DELAY := [14, 10, 7, 4, 2, 1]      # 보이는 공격 모션을 확인할 프레임
+const BLOCK_PROB := [15, 35, 60, 88, 95, 99]   # 공격 목격 시 가드 확률(%)
+const ERR_PROB := [35, 22, 12, 4, 1, 0]        # 무작위 행동 확률(%)
+const ANTI_AIR_PROB := [35, 45, 55, 76, 90, 98]
+const AIR_ATTACK_PROB := [25, 32, 40, 60, 76, 90]
+const SUPER_PROB := [22, 28, 35, 55, 72, 88]
+const HAN_CHAIN_PROB := [25, 35, 45, 72, 88, 98]
+const ARIN_CHAIN_PROB := [20, 28, 35, 72, 88, 98]
 const ActionLibrary := preload("res://ai/cpu_action_library.gd")
 
 var pi: int
@@ -25,9 +32,9 @@ var _reach := {}           # slot → px
 
 func _init(player_index: int, difficulty: int, rng_seed: int) -> void:
 	pi = player_index
-	level = clampi(difficulty, 1, 4)
+	level = clampi(difficulty, 1, MAX_LEVEL)
 	rng = maxi(rng_seed, 1)
-	react_delay = [14, 10, 7, 5][level - 1]
+	react_delay = REACT_DELAY[level - 1]
 
 
 func _roll(bound: int) -> int:
@@ -82,9 +89,11 @@ func think(w: CombatWorld) -> int:
 				if not on_block and not on_hit:
 					continue
 				var targets: Array = cw["targets"]
-				if w.chars[pi]["id"] == "han" and targets.has("han_tech") and _roll(100) < 45:
+				if w.chars[pi]["id"] == "han" and targets.has("han_tech") \
+						and _roll(100) < HAN_CHAIN_PROB[level - 1]:
 					return SimC.B_T
-				if w.chars[pi]["id"] == "arin" and _roll(100) >= 35:
+				if w.chars[pi]["id"] == "arin" \
+						and _roll(100) >= ARIN_CHAIN_PROB[level - 1]:
 					return 0
 				if not targets.is_empty():
 					var follow: Dictionary = w.chars[pi]["moves_by_id"].get(targets[0], {})
@@ -94,7 +103,8 @@ func think(w: CombatWorld) -> int:
 	# 공중: 접근했으면 공중 공격 1회
 	if me["state"] == SimC.ST_JUMP and not me["air_done"]:
 		var agap: int = absi(me["x"] - op["x"]) / SimC.FP
-		if me["y"] < 130 * SimC.FP and agap < 130 and _roll(100) < 40:
+		if me["y"] < 130 * SimC.FP and agap < 130 \
+				and _roll(100) < AIR_ATTACK_PROB[level - 1]:
 			return SimC.B_M
 		return 0
 
@@ -105,7 +115,8 @@ func think(w: CombatWorld) -> int:
 
 	# 상대 공중 → 대공(강베기)
 	if (op["state"] == SimC.ST_JUMP or op["state"] == SimC.ST_AIR_ATTACK) \
-			and absi(me["x"] - op["x"]) / SimC.FP < 145 and _roll(100) < 55:
+			and absi(me["x"] - op["x"]) / SimC.FP < 145 \
+			and _roll(100) < ANTI_AIR_PROB[level - 1]:
 		return _start_action(ActionLibrary.Action.HEAVY, facing)
 
 	# 상대 공격 목격 → 지연 후 가드 (반응 지연 = 발동 프레임 경과로 근사)
@@ -119,16 +130,22 @@ func think(w: CombatWorld) -> int:
 		block_ticks -= 1
 		return _dir_word(-1, facing)
 
-	if cool > 0:
-		cool -= 1
-		return _dir_word(hold_dir, facing)
-	cool = CADENCE[level - 1] + _roll(5)
-
 	var gap: int = absi(me["x"] - op["x"]) / SimC.FP
 	var r_l := _reach_of(w, "light")
 	var r_m := _reach_of(w, "medium")
 	var r_h := _reach_of(w, "heavy")
 	var r_t := _reach_of(w, "tech")
+	var punishable := _is_punishable(w, op)
+
+	# 4단계부터는 화면에 드러난 후딜과 무기 튕김을 일반 판단 주기와 무관하게
+	# 바로 처벌한다. 입력을 훔쳐보는 대신 이미 발생한 공개 상태만 사용한다.
+	if level >= 4 and punishable:
+		return _punish(facing, gap, r_m, r_h)
+
+	if cool > 0:
+		cool -= 1
+		return _dir_word(hold_dir, facing)
+	cool = CADENCE[level - 1] + _roll(5)
 
 	# 실수 주입 (난이도가 낮을수록 잦음)
 	if _roll(100) < ERR_PROB[level - 1]:
@@ -141,7 +158,8 @@ func think(w: CombatWorld) -> int:
 			_: return 0
 
 	# 오의 시도
-	if me["nerve"] >= 3 and gap < r_h + 60 and _roll(100) < 35:
+	if me["nerve"] >= 3 and gap < r_h + 60 \
+			and _roll(100) < SUPER_PROB[level - 1]:
 		return _start_action(ActionLibrary.Action.SUPER, facing)
 
 	# 무진은 원거리에서 파도 연계로 압박한다. 사맥이 가득 차면 강 연계가
@@ -182,19 +200,9 @@ func think(w: CombatWorld) -> int:
 			and _can_use_slot(w, me, "tech") and _roll(100) < 38:
 		return _start_action(ActionLibrary.Action.TECH, facing)
 
-	# 처벌: 상대 후딜/무기 튕김 포착
-	var punishable: bool = op["state"] == SimC.ST_RECOIL
-	if op["state"] == SimC.ST_ATTACK:
-		var omv2: Dictionary = w.chars[1 - pi]["moves_by_id"].get(op["move"], {})
-		if not omv2.is_empty() and op["st_f"] > omv2["su"] + omv2["act"]:
-			punishable = true
+	# 1~3단계는 기존처럼 일반 판단 타이밍에만 후딜을 처벌한다.
 	if punishable:
-		if gap <= r_m:
-			return _start_action(ActionLibrary.Action.MEDIUM, facing)
-		if gap <= r_h:
-			return _start_action(ActionLibrary.Action.HEAVY, facing)
-		hold_dir = 1
-		return _dir_word(1, facing)
+		return _punish(facing, gap, r_m, r_h)
 
 	# 근접
 	if gap <= 95:
@@ -237,6 +245,24 @@ func think(w: CombatWorld) -> int:
 	if me["hp"] < 250 and _roll(100) < 30:
 		hold_dir = -1
 	return _dir_word(hold_dir, facing)
+
+
+func _is_punishable(w: CombatWorld, op: Dictionary) -> bool:
+	if op["state"] == SimC.ST_RECOIL:
+		return true
+	if op["state"] == SimC.ST_ATTACK:
+		var omv: Dictionary = w.chars[1 - pi]["moves_by_id"].get(op["move"], {})
+		return not omv.is_empty() and op["st_f"] > omv["su"] + omv["act"]
+	return false
+
+
+func _punish(facing: int, gap: int, medium_reach: int, heavy_reach: int) -> int:
+	if gap <= medium_reach:
+		return _start_action(ActionLibrary.Action.MEDIUM, facing)
+	if gap <= heavy_reach:
+		return _start_action(ActionLibrary.Action.HEAVY, facing)
+	hold_dir = 1
+	return _dir_word(1, facing)
 
 
 ## 훈련 더미: 0 서기 / 1 전부 가드 / 2 정밀 가드 시도 / 3 CPU
