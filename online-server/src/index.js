@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import {
   PROTOCOL,
+  SIM_BUILD,
   allowedOrigin,
   cleanCharacter,
   cleanInput,
@@ -19,7 +20,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === "/health") {
-      return Response.json({ ok: true, service: "eclipse-blades-relay", protocol: PROTOCOL }, { headers: jsonHeaders });
+      return Response.json({ ok: true, service: "eclipse-blades-relay", protocol: PROTOCOL, build: SIM_BUILD }, { headers: jsonHeaders });
     }
 
     const roomCode = roomCodeFromPath(url.pathname);
@@ -45,11 +46,35 @@ export class GameRoom extends DurableObject {
   async fetch(request) {
     const pair = new WebSocketPair();
     const [client, server] = Object.values(pair);
+    const existingSockets = this.#openSockets();
+    this.ctx.acceptWebSocket(server, ["player"]);
+    const requestedBuild = new URL(request.url).searchParams.get("b") ?? "";
+    if (requestedBuild !== SIM_BUILD) {
+      server.send(JSON.stringify({
+        t: "error",
+        code: "version_mismatch",
+        message: "게임이 갱신되었습니다. 두 기기에서 화면을 다시 열어주세요.",
+      }));
+      server.close(4001, "version mismatch");
+      return new Response(null, { status: 101, webSocket: client });
+    }
+
+    // 배포 전에 열린 Durable Object 연결은 build 첨부값이 없을 수 있다.
+    // 새 빌드가 방에 들어오면 그 연결을 종료해 서로 다른 시뮬레이션이 시작되지 않게 한다.
+    for (const stale of existingSockets) {
+      if (stale.deserializeAttachment()?.build !== SIM_BUILD) {
+        stale.send(JSON.stringify({
+          t: "error",
+          code: "version_mismatch",
+          message: "게임이 갱신되었습니다. 두 기기에서 화면을 다시 열어주세요.",
+        }));
+        stale.close(4001, "version mismatch");
+      }
+    }
     const sockets = this.#openSockets();
     const used = new Set(sockets.map((socket) => socket.deserializeAttachment()?.slot));
     const slot = used.has(0) ? (used.has(1) ? -1 : 1) : 0;
 
-    this.ctx.acceptWebSocket(server, ["player"]);
     if (slot < 0) {
       server.send(JSON.stringify({ t: "error", message: "이미 두 명이 대전 중인 방입니다." }));
       server.close(1008, "room full");
@@ -58,6 +83,7 @@ export class GameRoom extends DurableObject {
 
     const attachment = {
       slot,
+      build: SIM_BUILD,
       char: slot,
       ready: false,
       started: false,
@@ -73,6 +99,7 @@ export class GameRoom extends DurableObject {
       peers: all.length,
       chars: this.#slotValues(all, "char", [0, 1]),
       ready: this.#slotValues(all, "ready", [false, false]),
+      build: SIM_BUILD,
     }));
     this.#broadcast({ t: "peer_joined", slot, peers: all.length }, server);
     return new Response(null, { status: 101, webSocket: client });
@@ -164,7 +191,7 @@ export class GameRoom extends DurableObject {
     const sockets = this.#openSockets();
     if (sockets.length !== 2) return;
     const states = sockets.map((socket) => socket.deserializeAttachment());
-    if (!states.every((state) => state?.ready && !state.started)) return;
+    if (!states.every((state) => state?.ready && !state.started && state.build === SIM_BUILD)) return;
 
     for (let i = 0; i < sockets.length; i += 1) {
       states[i].started = true;

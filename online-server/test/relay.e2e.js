@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 
 const base = process.argv[2] ?? process.env.RELAY_TEST_URL ?? "ws://127.0.0.1:8788";
 const room = "TEST2Z";
+const build = "2026-07-20-hayate-rushdown";
 
-function connectClient() {
-  const ws = new WebSocket(`${base}/room/${room}?v=2`);
+function connectClient(clientBuild = build) {
+  const ws = new WebSocket(`${base}/room/${room}?v=2&b=${encodeURIComponent(clientBuild)}`);
   const messages = [];
   const waiters = [];
   ws.addEventListener("message", (event) => {
@@ -37,6 +38,11 @@ function connectClient() {
   }
   return { ws, opened, waitFor };
 }
+
+const outdated = connectClient("outdated-build");
+await outdated.opened;
+const versionError = await outdated.waitFor((m) => m.code === "version_mismatch", "version mismatch");
+assert.match(versionError.message, /갱신/);
 
 const first = connectClient();
 await first.opened;

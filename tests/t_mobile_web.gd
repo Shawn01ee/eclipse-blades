@@ -58,6 +58,16 @@ static func run(t, _args: Dictionary) -> void:
 			"홈 화면 실행은 fullscreen·landscape PWA")
 	t.ok(preset.contains("art/combat_atlas/*") and preset.contains("art/sheets/*") \
 			and preset.contains("art/sprites/*"), "비활성 전투 스킨을 웹 패키지에서 제외")
+	var export_file := FileAccess.open("res://tools/export_web.sh", FileAccess.READ)
+	var export_source := export_file.get_as_text() if export_file != null else ""
+	var post_file := FileAccess.open("res://tools/postprocess_web.py", FileAccess.READ)
+	var post_source := post_file.get_as_text() if post_file != null else ""
+	t.ok(export_source.contains("postprocess_web.py") \
+			and post_source.contains("registration.update()") \
+			and post_source.contains("controllerchange") \
+			and post_source.contains("self.skipWaiting()") \
+			and post_source.contains("self.clients.claim()"),
+			"새 배포 감지 시 서비스워커 즉시 교체·기존 탭 자동 새로고침")
 
 	var fighter_file := FileAccess.open("res://ui/fighter_view.gd", FileAccess.READ)
 	var fighter_source := fighter_file.get_as_text() if fighter_file != null else ""

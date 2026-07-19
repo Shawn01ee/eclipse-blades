@@ -1,4 +1,5 @@
 export const PROTOCOL = 2;
+export const SIM_BUILD = "2026-07-20-hayate-rushdown";
 export const INPUT_MASK = 1023;
 export const MAX_TICK_LEAD = 240;
 export const ROOM_RE = /^[A-HJ-NP-Z2-9]{6}$/;
