@@ -52,10 +52,11 @@ static func run(t, _args: Dictionary) -> void:
 	t.ok(preset.contains("'fullscreenchange',fit") \
 			and preset.contains("dispatchEvent(new Event('resize'))"),
 			"전체화면 전환 직후 캔버스 크기 다시 계산")
-	t.ok(preset.contains("progressive_web_app/enabled=true") \
-			and preset.contains("progressive_web_app/display=0") \
-			and preset.contains("progressive_web_app/orientation=1"),
-			"홈 화면 실행은 fullscreen·landscape PWA")
+	t.ok(preset.contains("progressive_web_app/enabled=false") \
+			and preset.contains("getRegistrations()") \
+			and preset.contains(".unregister()") \
+			and preset.contains("caches.delete"),
+			"구버전 캐시를 남기지 않는 무서비스워커 웹 빌드")
 	t.ok(preset.contains("art/combat_atlas/*") and preset.contains("art/sheets/*") \
 			and preset.contains("art/sprites/*"), "비활성 전투 스킨을 웹 패키지에서 제외")
 	var export_file := FileAccess.open("res://tools/export_web.sh", FileAccess.READ)
@@ -63,11 +64,10 @@ static func run(t, _args: Dictionary) -> void:
 	var post_file := FileAccess.open("res://tools/postprocess_web.py", FileAccess.READ)
 	var post_source := post_file.get_as_text() if post_file != null else ""
 	t.ok(export_source.contains("postprocess_web.py") \
-			and post_source.contains("registration.update()") \
-			and post_source.contains("controllerchange") \
-			and post_source.contains("self.skipWaiting()") \
-			and post_source.contains("self.clients.claim()"),
-			"새 배포 감지 시 서비스워커 즉시 교체·기존 탭 자동 새로고침")
+			and post_source.contains("LEGACY_PWA_FILES") \
+			and post_source.contains("path.unlink()") \
+			and post_source.contains("'\"serviceWorker\":\"index.service.worker.js\"'"),
+			"내보내기 뒤 옛 PWA 파일 제거·서비스워커 재활성화 차단")
 
 	var fighter_file := FileAccess.open("res://ui/fighter_view.gd", FileAccess.READ)
 	var fighter_source := fighter_file.get_as_text() if fighter_file != null else ""
@@ -104,6 +104,17 @@ static func run(t, _args: Dictionary) -> void:
 			"화면 회전·리사이즈 뒤 확장 무대 다시 그리기")
 
 	var layout := TouchControls.layout_for_size(120)
+	t.ok(not layout.has("jump_rect"), "별도 점프 버튼 없이 조이스틱 방향만 사용")
+	t.eq(TouchControls.direction_for_vector(Vector2(0, -18)), Vector2i(0, -1),
+			"조이스틱을 위로 짧게 밀어도 점프")
+	t.eq(TouchControls.direction_for_vector(Vector2(-20, -18)), Vector2i(-1, -1),
+			"짧은 좌상향 드래그를 후방 점프로 인식")
+	t.eq(TouchControls.direction_for_vector(Vector2(20, -18)), Vector2i(1, -1),
+			"짧은 우상향 드래그를 전방 점프로 인식")
+	t.eq(TouchControls.direction_for_vector(Vector2(20, 0)), Vector2i.ZERO,
+			"점프가 아닐 때 작은 좌우 흔들림은 이동으로 오인하지 않음")
+	t.eq(TouchControls.direction_for_vector(Vector2(0, 20)), Vector2i.ZERO,
+			"높아진 점프 민감도가 숙이기 오입력으로 번지지 않음")
 	var joy_center: Vector2 = layout["joy_center"]
 	var joy_radius: float = layout["joy_radius"]
 	var joy_safe: bool = joy_center.x - joy_radius >= 55.5 \
