@@ -12,7 +12,8 @@ signal desync_detected(tick: int)
 const PROTOCOL := 2
 const SIM_BUILD := "2026-07-20-hayate-rushdown"
 const INPUT_MASK := 1023
-const ROOM_ALPHABET := "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+const ROOM_ALPHABET := "0123456789"
+const ROOM_CODE_LEN := 4
 const DEFAULT_RELAY_URL := ""
 
 var relay_url := DEFAULT_RELAY_URL
@@ -52,7 +53,7 @@ func _process(delta: float) -> void:
 		while _socket.get_available_packet_count() > 0:
 			_receive_packet(_socket.get_packet().get_string_from_utf8())
 		_ping_elapsed += delta
-		if _ping_elapsed >= 2.0:
+		if _ping_elapsed >= 1.0:
 			_ping_elapsed = 0.0
 			_send({"t": "ping", "n": Time.get_ticks_msec()})
 	elif ws_state == WebSocketPeer.STATE_CLOSED:
@@ -73,8 +74,8 @@ func _process(delta: float) -> void:
 
 func connect_room(raw_code: String) -> bool:
 	var code := sanitize_room_code(raw_code)
-	if code.length() != 6:
-		network_error.emit("방 코드는 영문·숫자 6자리입니다.")
+	if code.length() != ROOM_CODE_LEN:
+		network_error.emit("방 코드는 숫자 4자리입니다.")
 		return false
 	if relay_url.strip_edges() == "":
 		network_error.emit("온라인 서버 주소가 아직 설정되지 않았습니다.")
@@ -226,7 +227,9 @@ func _receive_packet(text: String) -> void:
 			if slot in [0, 1] and tick >= 0:
 				_inputs[slot][tick] = int(data.get("w", 0)) & INPUT_MASK
 		"pong":
-			ping_ms = maxi(Time.get_ticks_msec() - int(data.get("n", 0)), 0)
+			# 단일 샘플은 TCP 지터로 크게 튄다 → 지수이동평균으로 표시를 평활화.
+			var sample := maxi(Time.get_ticks_msec() - int(data.get("n", 0)), 0)
+			ping_ms = sample if ping_ms < 0 else int(round(ping_ms * 0.7 + sample * 0.3))
 			room_changed.emit()
 		"peer_left":
 			peer_count = 1
@@ -259,10 +262,10 @@ func _set_status(value: String) -> void:
 
 static func sanitize_room_code(raw: String) -> String:
 	var out := ""
-	for ch in raw.to_upper():
+	for ch in raw:
 		if ROOM_ALPHABET.contains(ch):
 			out += ch
-		if out.length() == 6:
+		if out.length() == ROOM_CODE_LEN:
 			break
 	return out
 
@@ -271,7 +274,7 @@ static func make_room_code() -> String:
 	var rng := RandomNumberGenerator.new()
 	rng.randomize()
 	var out := ""
-	for _i in 6:
+	for _i in ROOM_CODE_LEN:
 		out += ROOM_ALPHABET[rng.randi_range(0, ROOM_ALPHABET.length() - 1)]
 	return out
 

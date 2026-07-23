@@ -9,15 +9,19 @@ extends Control
 
 signal pause_pressed
 
-const DEADZONE := 26.0
+const DEADZONE := 24.0
 const DIR_THRESH := 30.0
-const JUMP_THRESH := 34.0
+const JUMP_THRESH := 22.0        # 조이스틱 위로 살짝만 밀어도 점프(쉽게)
 const SAFE_EDGE := 56.0
 
 var joy_center := Vector2(170, 570)
 var joy_radius := 92.0
 var _joy_index := -1
 var _joy_vec := Vector2.ZERO
+
+# 전용 점프 버튼 (조이스틱 위) — 조이스틱 위로 미는 게 어려운 사람용
+var jump_rect := Rect2(96, 372, 148, 96)
+var _jump_index := -1
 
 # 버튼: 이름 → {rect, action, label, sub}
 var buttons := {}
@@ -43,6 +47,7 @@ func _sync_layout() -> void:
 	joy_radius = layout["joy_radius"]
 	joy_center = layout["joy_center"]
 	pause_rect = layout["pause_rect"]
+	jump_rect = layout["jump_rect"]
 	buttons = layout["buttons"]
 	queue_redraw()
 
@@ -58,6 +63,8 @@ static func layout_for_size(percent: int, viewport_size := Vector2(1280, 720)) -
 		"scale": scale,
 		"joy_radius": jr,
 		"joy_center": Vector2(SAFE_EDGE + jr, 720.0 - SAFE_EDGE - jr),
+		"jump_rect": Rect2(SAFE_EDGE + jr - 74.0 * scale, 720.0 - SAFE_EDGE - jr * 2.0 - 118.0 * scale,
+				148.0 * scale, 100.0 * scale),
 		"pause_rect": Rect2(608, 94, 64, 50),
 		"buttons": {
 			# 최대 120%에서도 원과 터치 판정이 겹치지 않는 2단 배열.
@@ -127,6 +134,13 @@ func _on_down(index: int, pos: Vector2) -> void:
 	if pause_rect.has_point(pos):
 		_pause_index = index
 		return
+	# 전용 점프 버튼 (조이스틱 영역보다 먼저 판정)
+	if jump_rect.has_point(pos):
+		_jump_index = index
+		_press("p1_up")
+		queue_redraw()
+		accept_event()
+		return
 	# 조이스틱: 화면 좌측 절반
 	if pos.x < 620 and _joy_index == -1:
 		_joy_index = index
@@ -149,6 +163,13 @@ func _on_up(index: int) -> void:
 	if index == _pause_index:
 		_pause_index = -1
 		pause_pressed.emit()
+		return
+	if index == _jump_index:
+		_jump_index = -1
+		# 조이스틱이 위로 밀려있지 않으면 점프 입력 해제
+		if _joy_vec.y > -JUMP_THRESH:
+			_release("p1_up")
+		queue_redraw()
 		return
 	if index == _joy_index:
 		_joy_index = -1
@@ -179,26 +200,40 @@ func _apply_joy() -> void:
 	else:
 		_release("p1_left")
 		_release("p1_right")
-	# 상(점프)/하(숙임)
+	# 상(점프)/하(숙임) — 전용 점프 버튼이 눌린 동안엔 위 입력을 유지
 	if v.y <= -JUMP_THRESH:
 		_press("p1_up")
 		_release("p1_down")
 	elif v.y >= JUMP_THRESH:
 		_press("p1_down")
-		_release("p1_up")
+		if _jump_index < 0:
+			_release("p1_up")
 	else:
-		_release("p1_up")
+		if _jump_index < 0:
+			_release("p1_up")
 		_release("p1_down")
 	queue_redraw()
 
 
 func _draw() -> void:
+	var f := ThemeDB.fallback_font
+	# 전용 점프 버튼
+	var jump_on: bool = _jump_index >= 0
+	var jfill: Color = Color(UiKit.SEAL, 0.85) if jump_on else Color(UiKit.PAPER_LIGHT, 0.62)
+	draw_rect(jump_rect, jfill)
+	draw_rect(jump_rect, UiKit.INK, false, 2.5)
+	var jc := jump_rect.get_center()
+	var jtcol: Color = UiKit.PAPER_LIGHT if jump_on else UiKit.INK
+	# 위 화살표 + 글자
+	var ap := PackedVector2Array([jc + Vector2(0, -20), jc + Vector2(-14, -4), jc + Vector2(14, -4)])
+	draw_polygon(ap, [jtcol])
+	var jtw := f.get_string_size("점프", HORIZONTAL_ALIGNMENT_LEFT, -1, 22).x
+	draw_string(f, jc - Vector2(jtw * 0.5, -22), "점프", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, jtcol)
 	# 조이스틱 베이스
 	draw_circle(joy_center, joy_radius, Color(UiKit.INK, 0.08))
 	draw_arc(joy_center, joy_radius, 0, TAU, 48, Color(UiKit.INK, 0.35), 2.5)
 	# 방향 힌트
-	var f := ThemeDB.fallback_font
-	for d in [[Vector2(-1, 0), "◀"], [Vector2(1, 0), "▶"], [Vector2(0, -1), "▲ 점프"], [Vector2(0, 1), "▼"]]:
+	for d in [[Vector2(-1, 0), "◀"], [Vector2(1, 0), "▶"], [Vector2(0, -1), "▲"], [Vector2(0, 1), "▼"]]:
 		var dir: Vector2 = d[0]
 		var p := joy_center + dir * (joy_radius - 22)
 		draw_string(f, p - Vector2(10, -6), d[1], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(UiKit.INK, 0.4))

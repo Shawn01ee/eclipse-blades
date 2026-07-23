@@ -2,12 +2,12 @@ export const PROTOCOL = 2;
 export const SIM_BUILD = "2026-07-20-hayate-rushdown";
 export const INPUT_MASK = 1023;
 export const MAX_TICK_LEAD = 240;
-export const ROOM_RE = /^[A-HJ-NP-Z2-9]{6}$/;
+export const ROOM_RE = /^[0-9]{4}$/;
 
 export function roomCodeFromPath(pathname) {
-  const match = pathname.match(/^\/room\/([A-Za-z0-9]{6})$/);
+  const match = pathname.match(/^\/room\/([0-9]{4})$/);
   if (!match) return null;
-  const code = match[1].toUpperCase();
+  const code = match[1];
   return ROOM_RE.test(code) ? code : null;
 }
 
@@ -38,5 +38,7 @@ export function cleanTick(value, lastTick) {
 export function allowedOrigin(origin) {
   if (!origin) return true;
   if (origin === "https://shawn01ee.github.io") return true;
+  // Vercel 배포(프로덕션·프리뷰) — "web" 프로젝트의 vercel.app 서브도메인
+  if (/^https:\/\/web-[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
   return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 }

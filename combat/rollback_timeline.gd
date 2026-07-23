@@ -2,8 +2,11 @@ class_name RollbackTimeline
 extends RefCounted
 ## 온라인 입력을 즉시 시뮬하고, 늦게 도착한 상대 입력만 짧게 되감아 보정한다.
 
-const MAX_PREDICTION := 8
-const INPUT_DELAY := 2
+# 웹(WebSocket/TCP)은 지터가 커서 지연-버퍼를 조금 더 두고 예측 한계를 넓혔다.
+# INPUT_DELAY 3 = 로컬 입력을 3틱(50ms) 앞서 보내 상대가 미리 받게 한다(롤백↓).
+# MAX_PREDICTION 12 = 패킷 한 개가 200ms까지 늦어도 화면이 멈추지 않고 예측을 잇는다.
+const MAX_PREDICTION := 12
+const INPUT_DELAY := 3
 const HISTORY_TICKS := 120
 const HASH_INTERVAL := 120
 const DIRECTION_MASK := SimC.B_LEFT | SimC.B_RIGHT | SimC.B_UP | SimC.B_DOWN

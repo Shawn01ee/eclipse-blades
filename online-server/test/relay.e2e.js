@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 
 const base = process.argv[2] ?? process.env.RELAY_TEST_URL ?? "ws://127.0.0.1:8788";
-const room = "TEST2Z";
+const room = "0427";
 const build = "2026-07-20-hayate-rushdown";
 
 function connectClient(clientBuild = build) {

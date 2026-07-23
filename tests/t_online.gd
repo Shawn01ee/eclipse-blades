@@ -31,12 +31,12 @@ class FakeChannel extends RefCounted:
 
 static func run(t, _args: Dictionary) -> void:
 	t.suite("온라인 방·입력 동기화")
-	t.eq(SessionScript.sanitize_room_code("ab-i0o1-2z9x"), "AB2Z9X",
-			"혼동 문자를 제외하고 안전한 6자리 방 코드로 정리")
+	t.eq(SessionScript.sanitize_room_code("ab-0 4 2 7-xx99"), "0427",
+			"숫자만 남긴 4자리 방 코드로 정리")
 	var generated: String = SessionScript.make_room_code()
-	t.eq(generated.length(), 6, "새 방 코드는 6자리")
-	t.eq(SessionScript.sanitize_room_code(generated), generated, "새 방 코드는 허용 문자만 사용")
-	var versioned_url := SessionScript.room_url("wss://relay.example/", "AB2Z9X")
+	t.eq(generated.length(), 4, "새 방 코드는 4자리")
+	t.eq(SessionScript.sanitize_room_code(generated), generated, "새 방 코드는 숫자만 사용")
+	var versioned_url := SessionScript.room_url("wss://relay.example/", "0427")
 	t.ok(versioned_url.contains("v=2") \
 			and versioned_url.contains("b=2026-07-20-hayate-rushdown"),
 			"릴레이 연결에 프로토콜과 시뮬레이션 빌드 ID 포함")
@@ -102,10 +102,10 @@ static func run(t, _args: Dictionary) -> void:
 	var capped_world := H.mk(0, 1, 41)
 	var capped := Rollback.new(capped_world, 0)
 	var silent := FakeChannel.new(0)
-	for frame in 20:
-		var word := SimC.B_L if frame == 8 else 0
+	for frame in Rollback.MAX_PREDICTION + Rollback.INPUT_DELAY + 8:
+		var word := SimC.B_L if frame == Rollback.MAX_PREDICTION else 0
 		capped.frame(word, silent)
-	t.eq(capped.current_tick, Rollback.MAX_PREDICTION, "원격 단절 시 최대 8틱 뒤 안전 정지")
+	t.eq(capped.current_tick, Rollback.MAX_PREDICTION, "원격 단절 시 MAX_PREDICTION 틱 뒤 안전 정지")
 	t.eq(silent.get_input(0, Rollback.MAX_PREDICTION + Rollback.INPUT_DELAY, -1), SimC.B_L,
 			"정지 중 같은 틱 로컬 입력을 덮어쓰지 않음")
 
@@ -117,4 +117,4 @@ static func run(t, _args: Dictionary) -> void:
 	t.eq(delayed_channel.get_input(0, 0, -1), 0, "입력 지연 첫 틱은 중립")
 	t.eq(delayed_channel.get_input(0, 1, -1), 0, "입력 지연 둘째 틱도 중립")
 	t.eq(delayed_channel.get_input(0, Rollback.INPUT_DELAY, -1), SimC.B_H,
-			"현재 조작은 2틱 앞서 전송")
+			"현재 조작은 INPUT_DELAY틱 앞서 전송")

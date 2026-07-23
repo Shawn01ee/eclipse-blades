@@ -44,10 +44,10 @@ func _build_entry() -> void:
 	divider.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	entry_panel.add_child(divider)
 	code_input = LineEdit.new()
-	code_input.placeholder_text = "방 코드 6자리"
-	code_input.max_length = 6
+	code_input.placeholder_text = "방 코드 4자리 숫자"
+	code_input.max_length = 4
 	code_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	code_input.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_DEFAULT
+	code_input.virtual_keyboard_type = LineEdit.KEYBOARD_TYPE_NUMBER
 	code_input.virtual_keyboard_enabled = true
 	code_input.virtual_keyboard_show_on_focus = true
 	code_input.add_theme_font_size_override("font_size", 30)
@@ -158,14 +158,14 @@ func _on_code_input_event(event: InputEvent) -> void:
 	if event is InputEventScreenTouch and event.pressed:
 		code_input.grab_focus()
 		DisplayServer.virtual_keyboard_show(code_input.text, code_input.get_global_rect(),
-				DisplayServer.KEYBOARD_TYPE_DEFAULT, 6, code_input.caret_column, code_input.caret_column)
+				DisplayServer.KEYBOARD_TYPE_NUMBER, OnlineSession.ROOM_CODE_LEN, code_input.caret_column, code_input.caret_column)
 		code_input.accept_event()
 
 
 func _paste_code() -> void:
 	AudioManager.play("ui_move")
 	var clean := OnlineSession.sanitize_room_code(DisplayServer.clipboard_get())
-	if clean.length() != 6:
+	if clean.length() != OnlineSession.ROOM_CODE_LEN:
 		_show_error("복사한 방 코드를 찾지 못했습니다.")
 		return
 	code_input.text = clean
