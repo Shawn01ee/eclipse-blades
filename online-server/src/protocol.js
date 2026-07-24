@@ -37,8 +37,7 @@ export function cleanTick(value, lastTick) {
 
 export function allowedOrigin(origin) {
   if (!origin) return true;
-  if (origin === "https://shawn01ee.github.io") return true;
-  // Vercel 배포(프로덕션·프리뷰) — "web" 프로젝트의 vercel.app 서브도메인
-  if (/^https:\/\/web-[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
+  // Vercel 배포(프로덕션·프리뷰) — eclipse-blades(신규)·web(구) 프로젝트의 vercel.app
+  if (/^https:\/\/(eclipse-blades|web)(-[a-z0-9-]+)?\.vercel\.app$/.test(origin)) return true;
   return /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 }

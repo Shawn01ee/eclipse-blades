@@ -25,8 +25,5 @@ art/combat_atlas/README.md
 art/combat_atlas/*_chroma.png
 art/combat_atlas/*_chroma.png.import
 
-# Keep the committed web release used by GitHub Pages.
-!build/
-!build/web/
-!build/web/**
-build/web/*.import
+# 웹 빌드는 Vercel CLI가 로컬 build/web 에서 직접 배포한다(깃 추적 안 함).
+build/

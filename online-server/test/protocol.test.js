@@ -37,10 +37,11 @@ test("validates fighter, input bitmask and strictly sequential tick", () => {
 });
 
 test("allows production and local development origins only", () => {
-  assert.equal(allowedOrigin("https://shawn01ee.github.io"), true);
+  assert.equal(allowedOrigin("https://eclipse-blades.vercel.app"), true);
+  assert.equal(allowedOrigin("https://eclipse-blades-rmis4mcur-leesmofficial01-7776s-projects.vercel.app"), true);
   assert.equal(allowedOrigin("https://web-gilt-iota-25.vercel.app"), true);
-  assert.equal(allowedOrigin("https://web-leesmofficial01-7776s-projects.vercel.app"), true);
   assert.equal(allowedOrigin("http://localhost:8060"), true);
   assert.equal(allowedOrigin("https://evil.example"), false);
   assert.equal(allowedOrigin("https://evil.vercel.app"), false);
+  assert.equal(allowedOrigin("https://website-evil.vercel.app"), false);
 });
