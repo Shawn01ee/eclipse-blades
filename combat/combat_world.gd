@@ -310,8 +310,11 @@ func _advance_states(frozen: Array) -> void:
 				p["st_f"] += 1
 			SimC.ST_PREJUMP:
 				p["st_f"] += 1
+				# 프리점프 동안 좌우 입력이 확정되면 수평속도를 갱신한다.
+				# → 위로 튕긴 직후 앞/뒤를 마저 넣어도 대각 점프가 부드럽게 나온다.
+				_set_jump_jvx(i)
 				if p["st_f"] >= SimC.PREJUMP:
-					# 도약 발진
+					# 도약 발진 (발진 시점 방향이 최종 반영됨)
 					p["state"] = SimC.ST_JUMP
 					p["st_f"] = 0
 					p["vy"] = SimC.JUMP_VY
@@ -430,13 +433,7 @@ func _select_action(i: int) -> void:
 	if (p["cur_in"] & SimC.B_UP) and not (p["prev_in"] & SimC.B_UP):
 		p["state"] = SimC.ST_PREJUMP
 		p["st_f"] = 0
-		var rel0 := _rel_dirs(i, p["cur_in"])
-		if rel0 & SimC.D_FWD:
-			p["jvx"] = maxi(absi(p["vx"]), SimC.JUMP_VX_F) * p["facing"]
-		elif rel0 & SimC.D_BACK:
-			p["jvx"] = -maxi(absi(p["vx"]), SimC.JUMP_VX_B) * p["facing"]
-		else:
-			p["jvx"] = p["vx"]
+		_set_jump_jvx(i)   # 초기 방향(프리점프 동안 재확정됨)
 		_ev({"t": "jump", "p": i})
 		return
 
@@ -524,6 +521,19 @@ func _select_action(i: int) -> void:
 	else:
 		p["state"] = SimC.ST_IDLE
 	p["st_f"] = 0
+
+
+## 현재 눌린 좌우 방향으로 점프 수평속도(jvx)를 결정한다.
+## 걷던 속도(vx)를 보존해 최소 점프속도와 비교(momentum-preserving).
+func _set_jump_jvx(i: int) -> void:
+	var p: Dictionary = s["p"][i]
+	var rel := _rel_dirs(i, p["cur_in"])
+	if rel & SimC.D_FWD:
+		p["jvx"] = maxi(absi(p["vx"]), SimC.JUMP_VX_F) * p["facing"]
+	elif rel & SimC.D_BACK:
+		p["jvx"] = -maxi(absi(p["vx"]), SimC.JUMP_VX_B) * p["facing"]
+	else:
+		p["jvx"] = p["vx"]
 
 
 func _conn_matches(conn: int, on: Array) -> bool:
